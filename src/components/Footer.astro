@@ -1,0 +1,58 @@
+---
+import { SITE } from '../config/site';
+import { CATEGORIES } from '../config/categories';
+const year = new Date().getFullYear();
+const labels: Record<string, string> = { github: 'GitHub', linkedin: 'LinkedIn', x: 'X', youtube: 'YouTube' };
+const socials = Object.entries(SITE.social).filter(([, v]) => v);
+const letters = 'SKODE'.split('');
+---
+
+<footer class="site-footer">
+  <div class="container">
+   <div class="footer-card" data-reveal>
+    <div class="footer-lead">
+      <h2 data-words>Salesforce, <em>explained</em> properly.</h2>
+      <div>
+        <p>{SITE.tagline}</p>
+        <p class="footer-status"><span class="pulse pulse--ok" aria-hidden="true"></span>New guides published regularly</p>
+      </div>
+    </div>
+    <div class="footer-top">
+      <nav aria-label="Topics" class="footer-col">
+        <h2>Topics</h2>
+        <ul role="list">{CATEGORIES.map((c) => <li><a href={`/category/${c.slug}/`}>{c.name}</a></li>)}</ul>
+      </nav>
+      <nav aria-label="Site" class="footer-col">
+        <h2>Site</h2>
+        <ul role="list">
+          <li><a href="/articles/">All articles</a></li>
+          <li><a href="/playground/">Playground</a></li>
+          <li><a href="/search/">Search</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="/contact/">Contact</a></li>
+          <li><a href="/follow/">Follow with RSS</a></li>
+        </ul>
+      </nav>
+      <nav aria-label="Follow" class="footer-col">
+        <h2>Follow</h2>
+        <ul role="list">
+          {socials.map(([k, v]) => <li><a href={v} rel="noopener me" target="_blank">{labels[k] ?? k}</a></li>)}
+          <li><a href="/rss.xml">RSS feed</a></li>
+        </ul>
+      </nav>
+      <nav aria-label="Legal" class="footer-col">
+        <h2>Legal</h2>
+        <ul role="list">
+          <li><a href="/privacy/">Privacy Policy</a></li>
+          <li><a href="/terms/">Terms &amp; Conditions</a></li>
+        </ul>
+      </nav>
+    </div>
+   </div>
+    <div class="footer-mark"><div class="wordmark" aria-hidden="true" data-wordmark>{letters.map((c) => <span>{c === ' ' ? '\u00a0' : c}</span>)}</div></div>
+    <div class="footer-legal">
+      <p>© {year} {SITE.name}. {SITE.disclaimer}</p>
+      <p class="footer-keys"><kbd class="kbd">/</kbd> search <kbd class="kbd">T</kbd> theme</p>
+    </div>
+  </div>
+</footer>

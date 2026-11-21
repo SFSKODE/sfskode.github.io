@@ -1,0 +1,14 @@
+---
+import Icon from './Icon.astro';
+interface Props { title: string; blurb?: string; href?: string; cta?: string; id?: string; eyebrow?: string; num?: string }
+const { title, blurb, href, cta = 'View all', id, eyebrow, num } = Astro.props;
+---
+
+<header class="sec-head" data-reveal>
+  {eyebrow && <p class="sec-head__num"><span>{eyebrow}</span></p>}
+  <div class="sec-head__text">
+    <h2 id={id} data-words set:html={title} />
+    {blurb && <p class="sec-head__blurb">{blurb}</p>}
+  </div>
+  {href && <a class="link-more" href={href}>{cta}<Icon name="arrow-right" size={16} /></a>}
+</header>

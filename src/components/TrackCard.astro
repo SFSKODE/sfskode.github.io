@@ -1,0 +1,16 @@
+---
+import Icon from './Icon.astro';
+import type { Category } from '../config/categories';
+interface Props { cat: Category & { count?: number }; level?: 2 | 3; i?: number }
+const { cat, level = 3, i = 0 } = Astro.props;
+const Heading = `h${level}` as 'h2' | 'h3';
+---
+
+<article class="tile" style={`--c:${cat.accent};--d:${i * 70}ms`} data-reveal data-tilt data-cursor="Open">
+  <span class="tile__ico" aria-hidden="true"><Icon name={cat.icon} size={26} /></span>
+  <p class="tile__count">{cat.count === undefined ? 'Explore' : `${cat.count} ${cat.count === 1 ? 'guide' : 'guides'}`}</p>
+  <Heading class="tile__title"><a href={`/category/${cat.slug}/`}><span class="u">{cat.name}</span></a></Heading>
+  <p class="tile__desc">{cat.description}</p>
+  <ul class="tile__topics" role="list" aria-label="Topics covered">{cat.topics.slice(0, 5).map((t) => <li>{t}</li>)}</ul>
+  <span class="tile__go" aria-hidden="true"><Icon name="arrow-right" size={20} /></span>
+</article>
