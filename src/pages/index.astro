@@ -1,0 +1,277 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ArticleCard from '../components/ArticleCard.astro';
+import TrackCard from '../components/TrackCard.astro';
+import SectionHead from '../components/SectionHead.astro';
+import Newsletter from '../components/Newsletter.astro';
+import Icon from '../components/Icon.astro';
+import { SITE } from '../config/site';
+import { CHALLENGES } from '../data/challenges';
+import { getArticles, categoryCounts, allTags, getCategory, levelsOf, LEVELS, levelSlug, fmtDate, readingTime } from '../lib/articles';
+
+const articles = await getArticles();
+const tracks = categoryCounts(articles);
+
+const featured = articles.filter((a) => a.data.featured).slice(0, 3);
+const lead = featured.length ? featured : articles.slice(0, 3);
+const leadIds = new Set(lead.map((a) => a.id));
+const latest = articles.filter((a) => !leadIds.has(a.id)).slice(0, 6);
+const starters = articles.filter((a) => !leadIds.has(a.id) && levelsOf(a)[0] === 'Beginner').slice(0, 3);
+const shown = new Set([...leadIds, ...latest.map((a) => a.id)]);
+const agentCat = getCategory('agentforce');
+const agentforce = articles.filter((a) => a.data.category === 'agentforce' && !shown.has(a.id)).slice(0, 3);
+const tags = allTags(articles).slice(0, 18);
+const newest = articles[0];
+
+// Numbers shown in the hero are computed from the real content, so they can never go stale.
+const codeSamples = articles.reduce((n, a) => n + Math.floor(((a.body ?? '').match(/^```/gm)?.length ?? 0) / 2), 0);
+const sourceCount = articles.reduce((n, a) => n + a.data.sources.length, 0);
+const stats = [
+  { n: articles.length, label: 'Guides', icon: 'book' },
+  { n: tracks.length, label: 'Topic tracks', icon: 'compass' },
+  { n: codeSamples, label: 'Code samples', icon: 'code' },
+  { n: sourceCount, label: 'Official sources linked', icon: 'shield' },
+];
+
+// Learning paths by level.
+const LEVEL_COPY: Record<string, { title: string; text: string; icon: string }> = {
+  Beginner: { title: 'Start from zero', text: 'Concepts, vocabulary and first working examples. No prior Salesforce development needed.', icon: 'compass' },
+  Intermediate: { title: 'Build real features', text: 'Integrations, async processing, security and testing patterns you will use at work.', icon: 'tools' },
+  Advanced: { title: 'Design for production', text: 'Architecture, reliability and platform internals for systems that must not fail.', icon: 'cpu' },
+};
+const paths = LEVELS.map((l) => {
+  const list = articles.filter((a) => levelsOf(a).includes(l));
+  return { level: l, slug: levelSlug(l), total: list.length, picks: list.slice(0, 6), ...LEVEL_COPY[l] };
+});
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: SITE.name,
+  url: String(Astro.site),
+  description: SITE.description,
+  potentialAction: { '@type': 'SearchAction', target: `${new URL('/search/', Astro.site)}?q={search_term_string}`, 'query-input': 'required name=search_term_string' },
+};
+const wallMax = Math.max(1, ...tags.map((t) => t.count));
+const pgSample = [
+  ['Acme Industries', 'Manufacturing', '48,200,000'],
+  ['Globex Energy', 'Energy', '31,750,000'],
+  ['Northwind Logistics', 'Transportation', '22,400,000'],
+  ['Initech Software', 'Technology', '14,900,000'],
+  ['Umbrella Health', 'Healthcare', '9,320,000'],
+];
+---
+
+<BaseLayout jsonLd={jsonLd}>
+  <!-- ============ HERO ============ -->
+  <section class="hero" data-hero>
+    <div class="container hero__in">
+      <a class="hero__pill" href="/playground/" data-reveal><span class="hero__new">New</span>Run Apex and SOQL on your org<Icon name="arrow-right" size={14} /></a>
+
+      <h1 class="hero__title" data-kinetic>Learn Salesforce <span class="g">properly.</span></h1>
+      <p class="hero__lead" data-reveal style="--d:140ms">{SITE.description}</p>
+      <div class="hero__actions" data-reveal style="--d:220ms">
+        <a class="btn btn--primary btn--lg" href="/articles/" data-magnet>Start reading<Icon name="arrow-right" size={18} /></a>
+        <a class="btn btn--lg" href="/playground/" data-magnet>Open the playground</a>
+      </div>
+
+      <div class="hs" data-hs data-reveal style="--d:300ms">
+        <label class="hs__label" for="hs-input">Search {articles.length} guides</label>
+        <form class="hs__field" action="/search/" method="get" role="search">
+          <Icon name="search" size={22} />
+          <input class="hs__input" id="hs-input" name="q" type="search" placeholder="batch apex, agent actions…" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" role="combobox" aria-expanded="false" aria-controls="hs-list" aria-autocomplete="list" />
+          <kbd class="kbd" aria-hidden="true">/</kbd>
+        </form>
+        <ul class="hs__list" id="hs-list" role="listbox" aria-label="Search suggestions" hidden></ul>
+      </div>
+
+      <div class="resume" data-resume>
+        <span class="resume__k">Pick up where you left off</span>
+        <a class="resume__t" data-resume-link href="/articles/"></a>
+        <span class="resume__bar" aria-hidden="true"><i data-resume-bar></i></span>
+        <a class="link-more" data-resume-go href="/articles/">Continue<Icon name="arrow-right" size={16} /></a>
+      </div>
+
+      <svg class="hero__stamp" viewBox="0 0 120 120" aria-hidden="true" focusable="false">
+        <defs><path id="stamp-c" d="M60,60 m-44,0 a44,44 0 1,1 88,0 a44,44 0 1,1 -88,0" /></defs>
+        <circle class="stamp__bg" cx="60" cy="60" r="58" />
+        <g class="stamp__ring"><text><textPath href="#stamp-c" startOffset="0" textLength="273" lengthAdjust="spacing">SALESFORCE · LEARN · BUILD · SHIP ·</textPath></text></g>
+        <path class="stamp__arrow" d="M50 70 L70 50 M55 50 H70 V65" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </div>
+  </section>
+
+  <!-- ============ FEATURED CAROUSEL ============ -->
+  {lead.length > 0 && (
+    <section class="feat" aria-labelledby="feat-h" data-feat>
+      <div class="container feat__head">
+        <div>
+          <p class="eyebrow"><span>Featured</span></p>
+          <h2 id="feat-h" data-words>Hand-picked, <em>start here</em></h2>
+        </div>
+        <div class="feat__ctl" data-feat-ctl>
+          <button class="icon-btn" type="button" data-feat-prev aria-label="Previous featured guide"><Icon class="flip" name="arrow-right" size={18} /></button>
+          <button class="icon-btn" type="button" data-feat-next aria-label="Next featured guide"><Icon name="arrow-right" size={18} /></button>
+        </div>
+      </div>
+      <div class="feat__track" data-feat-track tabindex="0" role="region" aria-roledescription="carousel" aria-label="Featured guides, scroll sideways">
+        {lead.map((a, i) => <ArticleCard article={a} variant="slide" level={3} eager={i === 0} i={i} />)}
+      </div>
+      <div class="container"><div class="feat__dots" data-feat-dots aria-hidden="true">{lead.map(() => <i></i>)}</div></div>
+    </section>
+  )}
+
+  <!-- ============ TAG STRIP ============ -->
+  <div class="marquee" aria-hidden="true" data-marquee>
+    <div class="marquee__track">
+      {[0, 1].map(() => (
+        <ul class="marquee__row" role="presentation">
+          {tags.map((t) => <li><a href={`/tag/${t.slug}/`} tabindex="-1">{t.name}</a></li>)}
+        </ul>
+      ))}
+    </div>
+  </div>
+
+  <div class="container">
+    <dl class="ledger" data-reveal>
+      {stats.map((s) => (
+        <div class="stat">
+          <dt>{s.label}</dt>
+          <dd><span data-count={s.n}>{s.n}</span></dd>
+        </div>
+      ))}
+    </dl>
+  </div>
+
+  <!-- ============ TRACKS ============ -->
+  <section class="section" aria-labelledby="topics-h">
+    <div class="container">
+      <SectionHead id="topics-h" eyebrow="Tracks" title="Five tracks, <em>one platform</em>" blurb="Each track stands alone and reads in any order. Pick the one that matches what you build." href="/categories/" cta="All topics" />
+      <div class="bento">
+        {tracks.map((c, i) => <TrackCard cat={c} level={3} i={i} />)}
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 02 PLAYGROUND ============ -->
+  <section class="section section--tight" aria-labelledby="pg-h">
+    <div class="container">
+      <div class="pgs" data-reveal>
+        <div class="pgs__copy">
+          <p class="eyebrow"><span>Playground</span></p>
+          <h2 id="pg-h" data-words>Run it on <em>your own</em> org.</h2>
+          <p class="pgs__lead">Connect a Salesforce org with one click, then write Apex and SOQL right here. Results, schema and debug logs sit beside the code. Your password never touches this site.</p>
+          <ul class="pgs__envs" aria-label="Supported environments"><li>Production</li><li>Sandbox</li><li>My Domain</li></ul>
+          <ul class="pgs__feats">
+            <li><b>Results table</b><span>Sort, filter, export CSV</span></li>
+            <li><b>Schema browser</b><span>Objects, fields, relationships</span></li>
+            <li><b>Debug log viewer</b><span>Timeline and limit meters</span></li>
+            <li><b>{CHALLENGES.length} guided challenges</b><span>Checked against your real data</span></li>
+          </ul>
+          <div class="pgs__cta">
+            <a class="btn btn--primary btn--lg" href="/playground/" data-magnet>Open the playground<Icon name="arrow-right" size={18} /></a>
+          </div>
+        </div>
+        <div class="ide" data-ide data-play aria-label="Illustration of the playground">
+          <div class="ide__top">
+            <span class="ide__dots" aria-hidden="true"><i></i><i></i><i></i></span>
+            <span class="ide__tabs"><span class="ide__tab">Apex</span><span class="ide__tab" data-on>SOQL</span></span>
+            <span class="ide__org"><i></i>Sandbox · acme--dev</span>
+          </div>
+          <pre class="ide__code"><code data-ide-code><span class="kw">SELECT</span> Name, Industry, AnnualRevenue
+<span class="kw">FROM</span> <span class="ty">Account</span>
+<span class="kw">WHERE</span> AnnualRevenue &gt; <span class="nu">1000000</span>
+<span class="kw">ORDER BY</span> AnnualRevenue <span class="kw">DESC</span>
+<span class="kw">LIMIT</span> <span class="nu">5</span></code></pre>
+          <div class="ide__bar"><span><b>Success</b> · 5 rows</span><span>Run ⌃⏎</span></div>
+          <div class="ide__tablewrap" tabindex="0" role="region" aria-label="Sample query results">
+            <table>
+              <thead><tr><th>Name</th><th>Industry</th><th>AnnualRevenue</th></tr></thead>
+              <tbody>{pgSample.map((r, i) => <tr style={`--i:${i}`}><td>{r[0]}</td><td>{r[1]}</td><td class="num">{r[2]}</td></tr>)}</tbody>
+            </table>
+          </div>
+          <p class="ide__note">Illustration with sample data. Connect your own org to run real queries.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ NEW TO SALESFORCE ============ -->
+  {starters.length > 0 && (
+    <section class="section section--tight" aria-labelledby="start-h">
+      <div class="container">
+        <SectionHead id="start-h" eyebrow="New to Salesforce?" title="Gentle <em>first steps</em>" blurb="Beginner guides with no prior Salesforce development needed." href="/articles/?level=beginner" cta="All beginner guides" />
+        <div class="grid grid--cards">{starters.map((a, i) => <ArticleCard article={a} i={i} />)}</div>
+      </div>
+    </section>
+  )}
+
+  <!-- ============ 04 LEARNING PATHS ============ -->
+  <section class="section section--tint" aria-labelledby="paths-h">
+    <div class="container">
+      <SectionHead id="paths-h" eyebrow="Learning paths" title="Choose your <em>level</em>" blurb="Every guide is rated, so you can climb from first steps to production design without guessing what to read next." />
+      <div class="lanes">
+        {paths.map((p, i) => (
+          <article class="lane" data-reveal data-tilt style={`--d:${i * 90}ms`}>
+            <span class="lane__n" aria-hidden="true">{i + 1}</span>
+            <div class="lane__lv"><h3>{p.title}</h3><small>{p.level} · {p.total}</small></div>
+            <p>{p.text}</p>
+            <ul class="lane__list" role="list">
+              {p.picks.slice(0, 5).map((a) => <li><a href={`/articles/${a.id}/`}><span>{a.data.title}</span><span>{readingTime(a.body)} min</span></a></li>)}
+            </ul>
+            <a class="link-more" href={`/articles/?level=${p.slug}`}>All {p.level.toLowerCase()} guides<Icon name="arrow-right" size={16} /></a>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 05 LATEST ============ -->
+  {latest.length > 0 && (
+    <section class="section" aria-labelledby="latest-h">
+      <div class="container">
+        <SectionHead id="latest-h" eyebrow="Fresh" title="The latest <em>guides</em>" href="/articles/" />
+        <div class="grid grid--cards">{latest.map((a, i) => <ArticleCard article={a} i={i % 3} />)}</div>
+      </div>
+    </section>
+  )}
+
+  <!-- ============ AGENTFORCE SPOTLIGHT ============ -->
+  {agentforce.length > 0 && agentCat && (
+    <section class="spot" aria-labelledby="agent-h" style={`--c:${agentCat.accent}`}>
+      <span class="spot__word" aria-hidden="true" data-parallax>Agentforce</span>
+      <div class="container">
+        <SectionHead id="agent-h" eyebrow="Spotlight" title="Agentforce, <em>in practice</em>" blurb={agentCat.description} href={`/category/${agentCat.slug}/`} cta="Agentforce track" />
+        <div class="grid grid--cards">{agentforce.map((a, i) => <ArticleCard article={a} i={i} />)}</div>
+      </div>
+    </section>
+  )}
+
+  <!-- ============ 07 PRINCIPLES ============ -->
+  <section class="section" aria-labelledby="why-h">
+    <div class="container">
+      <SectionHead id="why-h" eyebrow="Why SF SKODE" title="Written to be <em>checked</em>, not just read" />
+      <div class="pillars">
+        <div class="pillar" data-reveal data-tilt><span class="pillar__ico" aria-hidden="true"><Icon name="shield" size={26} /></span><h3>Source-backed</h3><p>Every guide links the official documentation it was written from, so you can verify each claim in a click.</p></div>
+        <div class="pillar" data-reveal data-tilt style="--d:90ms"><span class="pillar__ico" aria-hidden="true"><Icon name="code" size={26} /></span><h3>Code you can copy</h3><p>Highlighted examples with a one-click copy button, and a playground where you can run them against your own org.</p></div>
+        <div class="pillar" data-reveal data-tilt style="--d:180ms"><span class="pillar__ico" aria-hidden="true"><Icon name="bolt" size={26} /></span><h3>Honest about change</h3><p>Salesforce ships three releases a year. Where something could not be verified, the guide says so instead of guessing.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TAG WALL ============ -->
+  {tags.length > 0 && (
+    <section class="section section--tight" aria-labelledby="tags-h">
+      <div class="container">
+        <SectionHead id="tags-h" eyebrow="Index" title="Browse by <em>subject</em>" />
+        <ul class="wall" data-reveal>{tags.map((t) => <li><a href={`/tag/${t.slug}/`} style={`--k:${(0.82 + 0.5 * (t.count / wallMax)).toFixed(2)}`}>{t.name}<sup>{t.count}</sup></a></li>)}</ul>
+      </div>
+    </section>
+  )}
+
+  <Newsletter />
+
+  <script>
+    import '../scripts/home';
+  </script>
+</BaseLayout>

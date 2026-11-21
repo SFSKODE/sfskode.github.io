@@ -1,0 +1,258 @@
+/* =====================================================================
+   SF SKODE · "Glass" design system
+   ---------------------------------------------------------------------
+   Identity    Glossy, soft and silky: frosted-glass surfaces floating over a slow aurora background.
+               Inter (a close cousin of Apple's SF) for everything, Geist Mono for code only.
+               Light blue + white by day, a separate neutral graphite by night.
+   Spacing     4px base scale, fluid section rhythm via --sec
+   Radius      Generous and consistent: 12 / 16 / 22 / 30 / pill
+   Motion      one easing family, three durations; everything is skipped under reduced motion.
+   Layers      @layer keeps specificity predictable: a later layer always beats an earlier one.
+   ===================================================================== */
+@layer reset, tokens, base, layout, components, pages, prose, motion;
+
+/* ---------- Reset ---------- */
+@layer reset {
+  *, *::before, *::after { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+  body, h1, h2, h3, h4, p, figure, blockquote, dl, dd, pre { margin: 0; }
+  ul, ol { margin: 0; padding: 0; }
+  img, svg, video, canvas { display: block; max-width: 100%; }
+  img { height: auto; }
+  button, input, textarea, select { font: inherit; color: inherit; letter-spacing: inherit; }
+  button { cursor: pointer; }
+  a { color: inherit; text-decoration: none; }
+  [hidden] { display: none !important; }
+}
+
+/* ---------- Tokens ---------- */
+@layer tokens {
+  :root {
+    --font-body: 'Inter Variable', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', system-ui, Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --font-display: var(--font-body);
+    --font-sans: var(--font-body);
+    --font-label: var(--font-body);
+    --font-mono: 'Geist Mono Variable', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+    /* Brand ramp */
+    --blue-900: #032d60; --blue-800: #014486; --blue-700: #0b5cab; --blue-600: #0071e3; --blue-500: #0a84ff;
+    --blue-400: #4da6ff; --blue-300: #7cc4ff; --blue-200: #aacbff; --blue-100: #d8e6fe; --blue-50: #eef5ff;
+    --cyan-500: #32c5ff; --violet: #7b5cfa; --amber: #f2a33a; --mint: #12b58a; --rose: #e5497f;
+
+    /* Spacing */
+    --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 20px; --s-6: 24px; --s-8: 32px; --s-10: 40px; --s-12: 48px;
+    --sec: clamp(64px, 8vw, 120px);
+    --sec-s: clamp(36px, 5vw, 72px);
+
+    /* Radius */
+    --r-xs: 8px; --r-sm: 12px; --r-md: 16px; --r-lg: 22px; --r-xl: 30px; --r-pill: 999px;
+
+    /* Layout */
+    --maxw: 1240px;
+    --gutter: clamp(16px, 4vw, 40px);
+    --header-h: 84px;   /* space reserved for the floating header: 12px offset + 56px pill + breathing room */
+    --fs: 1;            /* reader text-size multiplier (article pages) */
+
+    /* Motion */
+    --ease: cubic-bezier(0.22, 0.9, 0.3, 1);
+    --ease-io: cubic-bezier(0.65, 0, 0.35, 1);
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-spring: cubic-bezier(0.34, 1.4, 0.5, 1);
+    --t-fast: 0.18s;
+    --t-base: 0.35s;
+    --t-slow: 0.8s;
+
+    --lv-beginner: #12b58a; --lv-intermediate: #e8890c; --lv-advanced: #7b5cfa;
+  }
+
+  /* ===== Light: white glass over a pale-blue aurora (default) ===== */
+  :root,
+  :root[data-theme='light'] {
+    color-scheme: light;
+    --bg: #eef4ff;
+    --bg-2: #ffffff;
+    --bg-tint: rgba(255, 255, 255, 0.5);
+    --surface: #ffffff;
+    --surface-2: #f1f6ff;
+    --surface-3: #e2ebfb;
+    --text: #0a1a33;
+    --text-2: #3a4f6e;
+    --text-3: #566a8a;
+    --line: rgba(10, 40, 90, 0.08);
+    --line-strong: rgba(10, 40, 90, 0.16);
+    --rule: rgba(10, 40, 90, 0.1);
+
+    --glass: rgba(255, 255, 255, 0.6);
+    --glass-2: rgba(255, 255, 255, 0.82);
+    --glass-3: rgba(255, 255, 255, 0.34);
+    --glass-border: rgba(255, 255, 255, 0.85);
+    --glass-hi: rgba(255, 255, 255, 0.95);
+    --glass-edge: rgba(10, 40, 90, 0.07);
+    --ring: rgba(10, 132, 255, 0.55);
+
+    --brand: #0071e3;
+    --brand-hover: #0062c4;
+    --brand-soft: rgba(0, 113, 227, 0.1);
+    --brand-ink: #0062c4;
+    --link: #0062c4;
+    --focus: #0071e3;
+    --on-brand: #ffffff;
+    --btn-grad: linear-gradient(180deg, #2b95ff 0%, #0071e3 100%);
+    --btn-grad-hover: linear-gradient(180deg, #4ba6ff 0%, #0a7cf0 100%);
+    --mark: rgba(10, 132, 255, 0.22);
+    --grad-text: linear-gradient(100deg, #0071e3 0%, #20a4ff 48%, #6c5ce7 100%);
+
+    --e1: 0 1px 2px rgba(10, 40, 90, 0.06);
+    --e2: 0 1px 1px rgba(10, 40, 90, 0.04), 0 8px 24px -10px rgba(10, 40, 90, 0.18);
+    --e3: 0 2px 4px rgba(10, 40, 90, 0.04), 0 24px 60px -24px rgba(10, 40, 90, 0.34);
+    --shadow-pop: 0 30px 80px -20px rgba(10, 40, 90, 0.45), 0 0 0 1px rgba(10, 40, 90, 0.08);
+
+    --header-bg: rgba(255, 255, 255, 0.66);
+    --header-bg-2: rgba(255, 255, 255, 0.84);
+    --overlay: rgba(10, 26, 51, 0.38);
+
+    --code-bg: rgba(255, 255, 255, 0.7);
+    --code-bar: rgba(238, 244, 255, 0.9);
+    --inline-code: rgba(0, 113, 227, 0.09);
+    --ok: #0a8a62;
+    --danger: #c0263d;
+
+    --lv-beginner: #0a8a62; --lv-intermediate: #a85800; --lv-advanced: #6a45e8;
+
+    --aurora-1: #79c0ff; --aurora-2: #b9adff; --aurora-3: #7fe3f2; --aurora-4: #d4e6ff;
+    --aurora-a: 0.62;
+    --light: rgba(255, 255, 255, 0.75);
+    --grain: 0.045;
+    --term-bg: #0e1319; --term-bar: #151b24; --term-text: #dbe5f3; --term-dim: #8b99ad;
+    --tk-kw: #6a45e8; --tk-ty: #0a6ebd; --tk-fn: #0a7e62; --tk-st: #b4530a; --tk-cm: #6b7c93; --tk-nu: #c2410c;
+  }
+
+  /* ===== Dark: graphite glass (neutral ink, not navy) ===== */
+  :root[data-theme='dark'] {
+    color-scheme: dark;
+    --bg: #0b0d11;
+    --bg-2: #11141a;
+    --bg-tint: rgba(255, 255, 255, 0.03);
+    --surface: #14181f;
+    --surface-2: #1b2029;
+    --surface-3: #262d39;
+    --text: #f4f6fa;
+    --text-2: #b4bfce;
+    --text-3: #8a97aa;
+    --line: rgba(255, 255, 255, 0.07);
+    --line-strong: rgba(255, 255, 255, 0.15);
+    --rule: rgba(255, 255, 255, 0.1);
+
+    --glass: rgba(255, 255, 255, 0.055);
+    --glass-2: rgba(255, 255, 255, 0.09);
+    --glass-3: rgba(255, 255, 255, 0.03);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-hi: rgba(255, 255, 255, 0.16);
+    --glass-edge: rgba(0, 0, 0, 0.4);
+    --ring: rgba(120, 190, 255, 0.7);
+
+    --brand: #5aaeff;
+    --brand-hover: #82c0ff;
+    --brand-soft: rgba(90, 174, 255, 0.15);
+    --brand-ink: var(--brand);
+    --link: #78bbff;
+    --focus: #78bbff;
+    --on-brand: #04182e;
+    --btn-grad: linear-gradient(180deg, #7cc0ff 0%, #4aa3ff 100%);
+    --btn-grad-hover: linear-gradient(180deg, #9ad0ff 0%, #66b3ff 100%);
+    --mark: rgba(90, 174, 255, 0.3);
+    --grad-text: linear-gradient(100deg, #7cc4ff 0%, #5ac8fa 45%, #b79cff 100%);
+
+    --e1: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --e2: 0 1px 1px rgba(0, 0, 0, 0.3), 0 10px 30px -12px rgba(0, 0, 0, 0.7);
+    --e3: 0 2px 4px rgba(0, 0, 0, 0.3), 0 30px 70px -26px rgba(0, 0, 0, 0.85);
+    --shadow-pop: 0 40px 90px -30px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.12);
+
+    --header-bg: rgba(24, 28, 36, 0.62);
+    --header-bg-2: rgba(24, 28, 36, 0.82);
+    --overlay: rgba(2, 4, 8, 0.66);
+
+    --code-bg: rgba(255, 255, 255, 0.04);
+    --code-bar: rgba(255, 255, 255, 0.06);
+    --inline-code: rgba(255, 255, 255, 0.09);
+    --ok: #4be0a3;
+    --danger: #ff7a8a;
+
+    --lv-beginner: #34d399; --lv-intermediate: #fbbf24; --lv-advanced: #a78bfa;
+
+    --aurora-1: #3d78c4; --aurora-2: #6a5bc0; --aurora-3: #2c8da6; --aurora-4: #2a3a58;
+    --aurora-a: 0.3;
+    --light: rgba(160, 200, 255, 0.1);
+    --grain: 0.07;
+    --term-bg: #0e1218; --term-bar: #151b24; --term-text: #dbe5f3; --term-dim: #8b99ad;
+    --tk-kw: #c4a1ff; --tk-ty: #7dd3ff; --tk-fn: #8ff0d1; --tk-st: #ffc98a; --tk-cm: #7b8798; --tk-nu: #ffb86b;
+  }
+}
+
+/* ---------- Base ---------- */
+@layer base {
+  html {
+    background: var(--bg);
+    scroll-behavior: smooth;
+    scroll-padding-top: calc(var(--header-h) + 12px);
+    scrollbar-gutter: stable;
+  }
+  body {
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--text);
+    background: transparent;
+    overflow-x: clip;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: 'cv11', 'ss03', 'calt';
+  }
+  html.menu-open { overflow: hidden; }
+  html:has(dialog[open]) { overflow: hidden; }
+  main { flex: 1 0 auto; position: relative; z-index: 1; padding-top: var(--header-h); outline: none; }
+
+  h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 650; line-height: 1.06; letter-spacing: -0.034em; text-wrap: balance; font-optical-sizing: auto; overflow-wrap: break-word; }
+  /* Emphasis inside headings becomes a soft blue-to-violet gradient instead of italics. */
+  h1 em, h2 em, h3 em, .grad { font-style: normal; background: var(--grad-text); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
+  h1 em .w > span, h2 em .w > span, h3 em .w > span { background: var(--grad-text); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; background-size: 100% 100%; }
+  p { text-wrap: pretty; overflow-wrap: break-word; }
+  ::selection { background: color-mix(in srgb, var(--blue-500) 34%, transparent); color: inherit; }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; border-radius: 10px; }
+  .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+  .skip { position: fixed; top: 14px; left: 14px; z-index: 300; padding: 10px 18px; border-radius: var(--r-pill); background: var(--text); color: var(--bg); font-weight: 600; transform: translateY(-180%); transition: transform var(--t-base) var(--ease); }
+  .skip:focus { transform: none; }
+  hr { border: 0; }
+  ::-webkit-scrollbar { width: 12px; height: 12px; }
+  ::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--text) 22%, transparent); border-radius: 999px; border: 3px solid transparent; background-clip: content-box; }
+  ::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, var(--text) 36%, transparent); background-clip: content-box; border: 3px solid transparent; }
+  ::-webkit-scrollbar-track { background: transparent; }
+}
+
+/* ---------- Layout primitives ---------- */
+@layer layout {
+  .container { width: min(100% - 2 * var(--gutter), var(--maxw)); margin-inline: auto; }
+  .container--narrow { width: min(100% - 2 * var(--gutter), 780px); }
+  .section { padding-block: var(--sec); }
+  .section--tight { padding-block: var(--sec-s); }
+  .section--tint { background: transparent; }
+
+  /* The aurora: four soft colour fields drift slowly behind everything and shift a little as you scroll.
+     A faint pool of light follows the pointer. Purely decorative (scripts/motion.ts feeds --sy, --mx, --my). */
+  .aurora { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; contain: strict; }
+  .aurora i { position: absolute; border-radius: 50%; opacity: var(--aurora-a); filter: blur(72px); will-change: transform; translate: 0 calc(var(--sy, 0) * var(--k, -0.06) * 1px); }
+  .aurora i:nth-child(1) { width: 62vmax; height: 62vmax; left: -18vmax; top: -22vmax; background: radial-gradient(closest-side, var(--aurora-1), transparent); --k: -0.05; animation: drift-a 38s ease-in-out infinite alternate; }
+  .aurora i:nth-child(2) { width: 54vmax; height: 54vmax; right: -16vmax; top: 4vmax; background: radial-gradient(closest-side, var(--aurora-2), transparent); --k: -0.1; animation: drift-b 46s ease-in-out infinite alternate; }
+  .aurora i:nth-child(3) { width: 58vmax; height: 58vmax; left: 18vmax; bottom: -30vmax; background: radial-gradient(closest-side, var(--aurora-3), transparent); --k: -0.03; animation: drift-c 52s ease-in-out infinite alternate; }
+  .aurora i:nth-child(4) { width: 40vmax; height: 40vmax; right: 10vmax; bottom: -10vmax; background: radial-gradient(closest-side, var(--aurora-4), transparent); --k: -0.14; animation: drift-a 60s ease-in-out infinite alternate-reverse; }
+  .aurora::before { content: ''; position: absolute; inset: 0; background: radial-gradient(520px circle at var(--mx, 70%) var(--my, 20%), var(--light), transparent 70%); transition: opacity 0.6s; }
+  .aurora::after { content: ''; position: absolute; inset: 0; opacity: var(--grain); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .1 0 0 0 0 .2 0 0 0 0 .4 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+  @keyframes drift-a { to { transform: translate3d(9vmax, 7vmax, 0) scale(1.12); } }
+  @keyframes drift-b { to { transform: translate3d(-10vmax, 8vmax, 0) scale(0.92); } }
+  @keyframes drift-c { to { transform: translate3d(-8vmax, -6vmax, 0) scale(1.1); } }
+}

@@ -1,0 +1,91 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import '../styles/playground.css';
+---
+
+<BaseLayout title="Playground" description="Connect your own Salesforce org and practise Apex and SOQL right here: schema browser, results table, debug log viewer and guided challenges.">
+  <div class="pg" data-pg>
+    <header class="pg__head container">
+      <div class="pg__intro">
+        <p class="eyebrow"><span>Playground</span></p>
+        <h1 data-words>Practise on your <em>own</em> org.</h1>
+        <p class="pg__lede">Write Apex and SOQL, run it against a real Salesforce org, read the debug log, and work through guided challenges. Your password never touches this site.</p>
+      </div>
+      <div class="pg__conn" data-conn aria-live="polite">
+        <button class="btn btn--primary pg__connect" type="button" data-open-connect>Connect Salesforce org</button>
+      </div>
+    </header>
+
+    <div class="pg__banner container" data-banner hidden role="status"></div>
+
+    <div class="pg__shell container" data-shell>
+      <aside class="pg__side" data-side aria-label="Playground tools">
+        <div class="pg__stabs" role="tablist" aria-label="Tools">
+          <button type="button" role="tab" id="st-objects" aria-controls="sp-objects" aria-selected="true" data-side-tab="objects">Objects</button>
+          <button type="button" role="tab" id="st-learn" aria-controls="sp-learn" aria-selected="false" data-side-tab="learn" tabindex="-1">Challenges<span class="pg__badge" data-learn-badge></span></button>
+          <button type="button" role="tab" id="st-library" aria-controls="sp-library" aria-selected="false" data-side-tab="library" tabindex="-1">Library</button>
+          <button type="button" role="tab" id="st-history" aria-controls="sp-history" aria-selected="false" data-side-tab="history" tabindex="-1">History</button>
+        </div>
+        <div class="pg__spanel" id="sp-objects" role="tabpanel" aria-labelledby="st-objects" data-side-panel="objects">
+          <label class="pg__search"><span class="sr-only">Filter objects</span><input type="search" placeholder="Filter objects" autocomplete="off" spellcheck="false" data-obj-filter /></label>
+          <div class="pg__seg" role="group" aria-label="Object type">
+            <button type="button" aria-pressed="true" data-obj-kind="all">All</button>
+            <button type="button" aria-pressed="false" data-obj-kind="standard">Standard</button>
+            <button type="button" aria-pressed="false" data-obj-kind="custom">Custom</button>
+          </div>
+          <div class="pg__list" data-obj-list></div>
+        </div>
+        <div class="pg__spanel" id="sp-learn" role="tabpanel" aria-labelledby="st-learn" data-side-panel="learn" hidden></div>
+        <div class="pg__spanel" id="sp-library" role="tabpanel" aria-labelledby="st-library" data-side-panel="library" hidden></div>
+        <div class="pg__spanel" id="sp-history" role="tabpanel" aria-labelledby="st-history" data-side-panel="history" hidden></div>
+      </aside>
+
+      <section class="pg__work" aria-label="Editor and output">
+        <div class="pg__bar">
+          <button class="pg__sidebtn btn btn--sm" type="button" data-side-toggle aria-expanded="false"><span aria-hidden="true">☰</span> Tools</button>
+          <div class="pg__tabs" role="tablist" aria-label="Language">
+            <button type="button" role="tab" aria-selected="true" data-lang="apex" id="lt-apex">Apex</button>
+            <button type="button" role="tab" aria-selected="false" data-lang="soql" id="lt-soql" tabindex="-1">SOQL</button>
+          </div>
+          <div class="pg__actions">
+            <label class="pg__sel" data-apex-only><span class="sr-only">Log level</span>
+              <select data-loglevel aria-label="Debug log level">
+                <option value="DEBUG" selected>Log: Debug</option><option value="INFO">Log: Info</option><option value="FINE">Log: Fine</option><option value="FINEST">Log: Finest</option><option value="WARN">Log: Warn</option><option value="ERROR">Log: Error</option>
+              </select>
+            </label>
+            <label class="pg__chk" data-soql-only title="Include deleted and archived records"><input type="checkbox" data-opt-all /> <span>Include deleted</span></label>
+            <label class="pg__chk" data-soql-only title="Query the Tooling API instead of the data API"><input type="checkbox" data-opt-tooling /> <span>Tooling API</span></label>
+            <button class="btn btn--sm" type="button" data-save>Save</button>
+            <button class="btn btn--sm" type="button" data-format data-soql-only title="Tidy up the query">Tidy</button>
+            <button class="pg__run" type="button" data-run><span class="pg__run-label">Run</span><kbd class="kbd" aria-hidden="true">Ctrl ⏎</kbd></button>
+          </div>
+        </div>
+
+        <div class="pg__lesson" data-lesson hidden></div>
+
+        <div class="pg__editor-wrap" data-editor-wrap>
+          <div class="pg__editor" data-editor></div>
+        </div>
+        <div class="pg__split" data-split role="separator" aria-orientation="horizontal" aria-label="Resize editor and output" aria-valuenow="36" aria-valuemin="15" aria-valuemax="80" tabindex="0"></div>
+
+        <div class="pg__out" data-out>
+          <div class="pg__otabs" role="tablist" aria-label="Output">
+            <button type="button" role="tab" aria-selected="true" data-out-tab="results" id="ot-results">Results<span class="pg__badge" data-badge-results></span></button>
+            <button type="button" role="tab" aria-selected="false" data-out-tab="log" id="ot-log" tabindex="-1">Debug log<span class="pg__badge" data-badge-log></span></button>
+            <span class="pg__status" data-status></span>
+          </div>
+          <div class="pg__pane" role="tabpanel" data-out-pane="results" aria-labelledby="ot-results"></div>
+          <div class="pg__pane" role="tabpanel" data-out-pane="log" aria-labelledby="ot-log" hidden></div>
+        </div>
+      </section>
+    </div>
+
+    <noscript><p class="container empty">The playground needs JavaScript.</p></noscript>
+
+    <dialog class="dlg" data-connect-dlg aria-labelledby="cn-title"></dialog>
+    <div class="toasts" data-toasts aria-live="polite"></div>
+  </div>
+  <script>
+    import '../scripts/playground/app';
+  </script>
+</BaseLayout>

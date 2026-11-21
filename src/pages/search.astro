@@ -1,0 +1,97 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+import { getArticles, categoryCounts, allTags, LEVELS, levelSlug } from '../lib/articles';
+const articles = await getArticles();
+const tracks = categoryCounts(articles);
+const popular = allTags(articles).slice(0, 7);
+---
+
+<BaseLayout title="Search" description="Search every SF SKODE guide by title, topic, tag or keyword." noindex>
+  <div class="container">
+    <header class="sx__head">
+      <p class="eyebrow"><span>Search</span></p>
+      <h1 data-words>Find the right <em>guide</em></h1>
+      <form class="sx__field" role="search" onsubmit="return false">
+        <Icon name="search" size={22} />
+        <label class="sr-only" for="search-page-input">Search guides, topics and tags</label>
+        <input class="sx__input" id="search-page-input" type="search" placeholder="Try “batch apex”, “flow” or “agent actions”" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" autofocus />
+        <button class="sx__clear" type="button" data-clear aria-label="Clear search" hidden><Icon name="close" size={18} /></button>
+        <kbd class="kbd" aria-hidden="true" data-kbd>/</kbd>
+      </form>
+      <div class="sx__suggest" aria-label="Popular searches">
+        <span>Popular</span>
+        {popular.map((t) => <button class="chip" type="button" data-suggest={t.name}>{t.name}</button>)}
+      </div>
+    </header>
+
+    <div class="sx__layout">
+      <aside class="sx__filters" id="sx-filters" aria-label="Search filters" data-filters>
+        <div class="fgroup">
+          <h2>Show</h2>
+          <div class="fopts" role="radiogroup" aria-label="Result type" data-group="type">
+            <button class="fopt" type="button" role="radio" aria-checked="true" data-v="all">All results<span class="fopt__n" data-n="all"></span></button>
+            <button class="fopt" type="button" role="radio" aria-checked="false" data-v="articles">Articles<span class="fopt__n" data-n="articles"></span></button>
+            <button class="fopt" type="button" role="radio" aria-checked="false" data-v="topics">Topics<span class="fopt__n" data-n="topics"></span></button>
+            <button class="fopt" type="button" role="radio" aria-checked="false" data-v="tags">Tags<span class="fopt__n" data-n="tags"></span></button>
+            <button class="fopt" type="button" role="radio" aria-checked="false" data-v="pages">Pages<span class="fopt__n" data-n="pages"></span></button>
+          </div>
+        </div>
+        <div class="fgroup">
+          <h2>Topic</h2>
+          <div class="fopts" role="radiogroup" aria-label="Topic" data-group="track">
+            <button class="fopt" type="button" role="radio" aria-checked="true" data-v="">All topics<span class="fopt__n" data-n="track-all"></span></button>
+            {tracks.map((c) => <button class="fopt" type="button" role="radio" aria-checked="false" data-v={c.slug} style={`--c:${c.accent}`}><i class="dot"></i>{c.short}<span class="fopt__n" data-n={`track-${c.slug}`}>{c.count}</span></button>)}
+          </div>
+        </div>
+        <div class="fgroup">
+          <h2>Level</h2>
+          <div class="fopts" role="radiogroup" aria-label="Level" data-group="level">
+            <button class="fopt" type="button" role="radio" aria-checked="true" data-v="">Any level<span class="fopt__n" data-n="level-all"></span></button>
+            {LEVELS.map((l) => <button class="fopt" type="button" role="radio" aria-checked="false" data-v={levelSlug(l)}>{l}<span class="fopt__n" data-n={`level-${levelSlug(l)}`}></span></button>)}
+          </div>
+        </div>
+        <div class="fgroup">
+          <h2>Group articles</h2>
+          <div class="fopts" role="radiogroup" aria-label="Grouping" data-group="group">
+            <button class="fopt" type="button" role="radio" aria-checked="true" data-v="track">By topic</button>
+            <button class="fopt" type="button" role="radio" aria-checked="false" data-v="none">One list</button>
+          </div>
+        </div>
+        <button class="btn btn--sm sx__reset" type="button" data-reset-filters>Reset filters</button>
+      </aside>
+
+      <section class="sx__main" aria-label="Results">
+        <div class="sx__bar">
+          <p class="sx__count" id="count" role="status" aria-live="polite"></p>
+          <div class="sx__tools">
+            <button class="btn btn--sm sx__fbtn" type="button" data-filters-toggle aria-expanded="false" aria-controls="sx-filters"><Icon name="filter" size={16} />Filters<span class="chip__n" data-fcount hidden>0</span></button>
+            <label class="select">
+              <span class="sr-only">Sort articles by</span>
+              <select data-sort>
+                <option value="rel">Best match</option>
+                <option value="new">Newest first</option>
+                <option value="old">Oldest first</option>
+                <option value="short">Shortest read</option>
+                <option value="az">Title A to Z</option>
+              </select>
+              <Icon name="chevron" size={16} />
+            </label>
+          </div>
+        </div>
+        <div class="sx__active" data-active-filters hidden></div>
+        <div id="results" aria-busy="true">
+          <div class="sx__skel" aria-hidden="true">
+            {Array.from({ length: 4 }).map(() => (
+              <div><div class="skeleton skeleton--img"></div><div class="lines"><div class="skeleton" style="width:34%;height:12px"></div><div class="skeleton" style="height:20px"></div><div class="skeleton" style="width:82%;height:14px"></div></div></div>
+            ))}
+          </div>
+        </div>
+        <noscript><p class="empty">Search needs JavaScript. You can still <a href="/articles/">browse every article</a> or <a href="/categories/">pick a topic</a>.</p></noscript>
+      </section>
+    </div>
+  </div>
+  <script>
+    import '../scripts/search-page';
+  </script>
+</BaseLayout>
