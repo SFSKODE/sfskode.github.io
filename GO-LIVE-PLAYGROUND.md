@@ -1,6 +1,6 @@
 # Make the Playground work on your public website (step by step)
 
-Your website lives on GitHub Pages (`https://sanjay-kumar-b.github.io`), and later on Cloudflare Pages and your own domain.
+Your website lives on GitHub Pages (`https://sfskode.github.io`), and later on Cloudflare Pages and your own domain.
 Those hosts only serve files. The Playground also needs a **small server** that talks to Salesforce for the visitor.
 So you will have three pieces:
 
@@ -12,7 +12,9 @@ So you will have three pieces:
 
 **What a visitor does:** open the Playground → click **Connect Salesforce org** → a small window opens on
 `login.salesforce.com` → log in and click **Allow** → the window closes by itself and the Playground shows their org.
-They never see code, keys or settings. All the setup below is done once, by you.
+Orgs other than yours may first see a Salesforce message that the shared app is not supported there; the dialog then
+offers **Use my own app** (a one-time, two-minute step in their own org; see "Who can connect?").
+All the setup below is done once, by you.
 
 One API serves every copy of your website (GitHub Pages, Cloudflare Pages, your own domain). You only add each
 website address to one list (Part 5).
@@ -60,14 +62,25 @@ You can do this in any Salesforce org you own, for example a free Developer Edit
 
 If you ever see *"Local" apps work only in the org that owns them*: that is the next section.
 
-### Who can connect? (read this once)
+### Who can connect? (tested)
 
-- **You, and anyone in the org that owns the app:** works as soon as the steps above are done.
-- **Visitors from other Salesforce orgs:** since September 2025 Salesforce blocks apps that are not *installed* in the visitor's org, for most users. People with the permission **Approve Uninstalled Connected Apps** or **Use Any API Client** (Developer Edition owners are usually admins in their own org) can still approve it; ordinary users in company orgs will see an error that tells them to ask their admin.
-  Source: [Salesforce Admins blog](https://admin.salesforce.com/blog/2025/get-ready-for-changes-to-connected-app-usage-restrictions).
-- **To make it work for everybody**, Salesforce expects the app to be distributed as a **2GP managed package** (Distribution State **Packaged**, packaged from a Dev Hub org) that visitors' orgs install. That is a Salesforce-side packaging job; see Trailhead "Package and distribute external client apps". I could not test this part from here.
-- **Do this test before you tell anyone:** create a *fresh* Developer Edition org (a different one from the owner org), click Connect on your website, and see what happens. If it connects, ordinary Developer Edition users will connect too. If you see an "uninstalled app / ask your admin" style error, you need the packaging step.
-- Tell visitors in your Playground page text: *"Use a free Developer Edition org (developer.salesforce.com/signup) or a sandbox."* This is also the safest way to learn, because code run in the Playground executes for real.
+- **You, and anyone in the org that owns the app:** works.
+- **Any other org:** with a *Local* External Client App Salesforce answers
+  **"Cross-org OAuth flows are not supported for this external client app"** (this was tested on a real second org).
+  An app is only allowed in other orgs once it is *installed* there; the proper route is a packaged External Client App
+  (2GP managed package, Distribution State **Packaged**, built from a Dev Hub org with the Salesforce CLI). That is a larger
+  Salesforce-side project (Dev Hub, namespace, package versions, install links) and is optional; see
+  [Salesforce Trailhead](https://trailhead.salesforce.com/content/learn/modules/external-client-app-basics/package-and-distribute-external-client-apps).
+  Also note that since September 2025 Salesforce blocks apps not installed in an org for most users
+  ([Salesforce Admins](https://admin.salesforce.com/blog/2025/get-ready-for-changes-to-connected-app-usage-restrictions)).
+- **What the Playground does about it (already built):** when the shared app is blocked, the connect dialog shows
+  **Use my own app**. The visitor creates a small External Client App **in their own org** (2 minutes, steps are shown
+  in the dialog, callback URL = your API's `/api/sf/callback`), pastes its Consumer Key, and logs in through the same
+  window. Because the app belongs to their own org, Salesforce allows it everywhere (Developer Edition, sandbox, company org
+  where they may create apps). Their Consumer Key is not a secret and is remembered only in their own browser.
+  Orgs where the user may not create apps need their admin to do those 2 minutes.
+- Tell visitors on the Playground page: *"Use a free Developer Edition org (developer.salesforce.com/signup) or a sandbox."*
+  Code run in the Playground executes for real, so a practice org is also the safest way to learn.
 
 ---
 
@@ -87,7 +100,7 @@ If you ever see *"Local" apps work only in the org that owns them*: that is the 
    - Instance Type: **Free**
 5. Open **Environment Variables** → add these (name → value):
    - `SF_CLIENT_ID` → the Consumer Key from Part 1 step 10
-   - `SF_ALLOWED_ORIGINS` → `https://sanjay-kumar-b.github.io`
+   - `SF_ALLOWED_ORIGINS` → `https://sfskode.github.io`
    - `SF_SESSION_SECRET` → a long random text, 40+ characters. Make one: <https://www.random.org/strings/> or run `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`. Never share it.
    - `SF_REDIRECT_URI` → `https://sf-skode-api.onrender.com/api/sf/callback` (use your real Render address)
    - `NODE_VERSION` → `22`
@@ -96,7 +109,7 @@ If you ever see *"Local" apps work only in the org that owns them*: that is the 
 8. Go back to Salesforce (Part 1, step 6) and make sure the Callback URL is exactly the `SF_REDIRECT_URI` above.
 9. Check it from your computer (in the project folder):
    ```
-   npm run check:api -- https://sf-skode-api.onrender.com https://sanjay-kumar-b.github.io
+   npm run check:api -- https://sf-skode-api.onrender.com https://sfskode.github.io
    ```
    Every line must say `OK`. Each `FAIL` line tells you what to fix.
 
@@ -110,7 +123,7 @@ The website needs to know the API address when it is **built**.
 
 1. Put the whole project in your GitHub repo (first time only). The safe way, which never erases anything you cannot get back:
    ```
-   git clone https://github.com/sanjay-kumar-b/sanjay-kumar-b.github.io.git repo-copy
+   git clone https://github.com/sfskode/sfskode.github.io.git repo-copy
    ```
    - Open `repo-copy`, delete everything in it **except the hidden `.git` folder** (this removes the old built files).
    - Copy the project into it: everything from the project folder **except** `node_modules`, `dist`, `.astro` and `.env`. Make sure `package.json` sits directly in `repo-copy`, and `.gitignore`, `.github/` and `src/assets/covers/` (with your covers) are included.
@@ -125,9 +138,9 @@ The website needs to know the API address when it is **built**.
 2. Repo → **Settings → Pages → Build and deployment → Source: GitHub Actions**.
 3. Repo → **Settings → Secrets and variables → Actions → Variables tab → New repository variable**:
    - Name `PUBLIC_SF_API_URL`, value `https://sf-skode-api.onrender.com` (no trailing slash)
-   - Name `SITE_URL`, value `https://sanjay-kumar-b.github.io`
+   - Name `SITE_URL`, value `https://sfskode.github.io`
 4. Repo → **Actions** tab → *Deploy site to GitHub Pages* → **Run workflow** (it also runs on every push). Wait for the green tick.
-5. Open `https://sanjay-kumar-b.github.io/playground/`.
+5. Open `https://sfskode.github.io/playground/`.
 
 (Publishing a locally built `dist/` instead? Build with the variable set: Windows `set PUBLIC_SF_API_URL=https://sf-skode-api.onrender.com` then `npm run build`; Mac/Linux `PUBLIC_SF_API_URL=... npm run build`. Then publish `dist/`.)
 
@@ -135,7 +148,7 @@ The website needs to know the API address when it is **built**.
 
 ## Part 4. Test it like a visitor
 
-1. Open `https://sanjay-kumar-b.github.io/playground/` in a normal browser window.
+1. Open `https://sfskode.github.io/playground/` in a normal browser window.
 2. Click **Connect Salesforce org**. A small window opens at **login.salesforce.com**. (If nothing opens, allow pop-ups for the site; the dialog also offers "Log in on this page instead".)
 3. Log in, click **Allow**.
 4. The window closes; the Playground shows your org name and a green dot. Run `SELECT Id, Name FROM Account LIMIT 5`.
@@ -153,7 +166,7 @@ For **every** extra address the website will have:
    - Cloudflare Pages: **Workers & Pages → Create → Pages → Connect to Git** → pick the repo → Framework preset **Astro** (or build command `npm run build`, output `dist`) → **Environment variables**: `NODE_VERSION=22`, `PUBLIC_SF_API_URL=https://sf-skode-api.onrender.com`, `SITE_URL=https://your-project.pages.dev`.
 2. Add that website's exact origin to `SF_ALLOWED_ORIGINS` on Render, comma separated, then let Render redeploy:
    ```
-   https://sanjay-kumar-b.github.io,https://your-project.pages.dev,https://www.yourdomain.com
+   https://sfskode.github.io,https://your-project.pages.dev,https://www.yourdomain.com
    ```
    Rules: `https://`, the host only, no path, no trailing slash. `www.yourdomain.com` and `yourdomain.com` are different, add both if you use both. Preview deployments (`abc123.your-project.pages.dev`) are *not* allowed on purpose: a wildcard would let strangers' sites ask your visitors to log in.
 3. **Nothing changes in Salesforce.** The callback URL stays on the API address.
@@ -169,7 +182,7 @@ For **every** extra address the website will have:
 | Connect opens a window with *"This website is not on the list of sites allowed…"* | Your website address is missing from `SF_ALLOWED_ORIGINS` (or has a path / trailing slash). Fix and redeploy the API. |
 | Salesforce page says `redirect_uri_mismatch` | The Callback URL in the Salesforce app is not exactly `SF_REDIRECT_URI`. |
 | Salesforce says `invalid_client_id` / `client identifier invalid` | Wrong Consumer Key, or the app is not available to that user's org (see "Who can connect?"). |
-| Salesforce says the app is blocked / not installed / contact your administrator | Visitor's org does not allow uninstalled apps. They need the permission, an admin approval, or you need the packaged version. |
+| *Cross-org OAuth flows are not supported for this external client app* / app blocked / not installed | Expected for orgs other than the one that owns your app. The dialog offers **Use my own app** (visitor creates the app in their own org), or package your app (see "Who can connect?"). |
 | Window shows `Could not connect: not_configured` | `SF_CLIENT_ID` is missing on the API. |
 | Login works but the page says *"Could not reach the playground service"* | API asleep or down; wait a minute and reload. Check `/healthz`. Make sure `PUBLIC_SF_API_URL` was set when the site was built. |
 | The login window stays open on a "Connected" page | Your browser blocked the hand-over; click **Back to the playground** on that page. It always works as a fallback. |

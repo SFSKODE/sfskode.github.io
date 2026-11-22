@@ -103,6 +103,24 @@ await t('another browser cannot finish a login it did not start (state cookie)',
   const cb = await call(`/api/sf/callback?code=abc&state=${st}`, { origin: '' });
   const d = pageData(cb.text); assert.equal(d.ok, false); assert.equal(d.error, 'state_mismatch');
 });
+await t('bring your own app: a visitor\'s own Consumer Key works, also after a restart and a token refresh', async () => {
+  const own = '3MVG9OwnAppKeyFromVisitorOrg.12345';
+  const bad = await call(`/api/sf/login?env=production&popup=1&client_id=${encodeURIComponent('short key!')}&site=${encodeURIComponent(SITE)}`, { origin: '' });
+  assert.equal(bad.status, 400);
+  const r = await call(`/api/sf/login?env=custom&domain=${encodeURIComponent('127.0.0.1:' + MOCK)}&returnTo=/playground/&popup=1&client_id=${own}&site=${encodeURIComponent(SITE)}`, { origin: '' });
+  assert.equal(r.status, 302); assert.equal(new URL(r.h.get('location')).searchParams.get('client_id'), own);
+  const ls = (r.h.getSetCookie?.() || []).map((c) => c.split(';')[0]).find((c) => c.startsWith('sfp_ls='));
+  const u = new URL(r.h.get('location'));
+  const allow = await fetch(`http://127.0.0.1:${MOCK}/services/oauth2/approve`, { method: 'POST', redirect: 'manual', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ ...Object.fromEntries(u.searchParams), a: 'allow' }) });
+  const cb = new URL(allow.headers.get('location'));
+  const page = await call(cb.pathname + cb.search, { origin: '', cookie: ls });
+  const d = pageData(page.text); assert.equal(d.ok, true); const tk = d.token;
+  assert.equal((await call('/api/sf/session', { token: tk })).j.connected, true);
+  await stopApi(); await startApi();
+  await fetch(`http://127.0.0.1:${MOCK}/__expire`, { method: 'POST' });
+  const q = await call('/api/sf/query', { method: 'POST', token: tk, body: { soql: 'SELECT COUNT() FROM Account' } }); assert.equal(q.j.totalSize, 20);
+  await call('/api/sf/logout', { method: 'POST', token: tk, body: {} });
+});
 await t('logout with the token revokes it for good', async () => {
   const o = await call('/api/sf/logout', { method: 'POST', token, body: {} }); assert.equal(o.j.ok, true);
   const s = await call('/api/sf/session', { token }); assert.equal(s.j.connected, false);

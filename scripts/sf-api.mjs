@@ -291,11 +291,13 @@ function limitIp(req) {
 // Sealed sessions: the token itself carries the (encrypted) session, so nothing is lost when a free host restarts.
 // AES-256-GCM, key derived from SF_SESSION_SECRET. The browser cannot read or change it.
 const SEALED_PREFIX = 'v1.';
+// "Bring your own app": a visitor's own Connected / External Client App (Consumer Key), used when the shared app is blocked in their org.
+const OWN_CLIENT_RE = /^[A-Za-z0-9._]{20,255}$/;
 const SID_RE = /^(?:[A-Za-z0-9_-]{43}|v1\.[A-Za-z0-9_-]{40,3000})$/;
 const sealKey = (secret) => crypto.createHash('sha256').update(`sfp-session-v1:${secret}`).digest();
 
 function sealSession(secret, s) {
-  const payload = JSON.stringify({ rt: s.refreshToken, iu: s.instanceUrl, lh: s.loginHost, ls: s.loginScheme, u: s.user, o: s.orgId || null, exp: s.expiresAt });
+  const payload = JSON.stringify({ rt: s.refreshToken, iu: s.instanceUrl, lh: s.loginHost, ls: s.loginScheme, c: s.byo ? s.clientId : undefined, u: s.user, o: s.orgId || null, exp: s.expiresAt });
   const iv = crypto.randomBytes(12);
   const c = crypto.createCipheriv('aes-256-gcm', sealKey(secret), iv);
   const enc = Buffer.concat([c.update(payload, 'utf8'), c.final()]);
@@ -331,7 +333,7 @@ function lookupSession(req, cfg) {
     if (!iu) return null;
     const t = now();
     s = {
-      sid, accessToken: null, refreshToken: j.rt, instanceUrl: iu, loginHost: j.lh, loginScheme: j.ls === 'http' ? 'http' : 'https',
+      sid, accessToken: null, refreshToken: j.rt, instanceUrl: iu, loginHost: j.lh, loginScheme: j.ls === 'http' ? 'http' : 'https', clientId: OWN_CLIENT_RE.test(j.c || '') ? j.c : null, byo: OWN_CLIENT_RE.test(j.c || ''),
       user: j.u || { name: null, username: null, email: null, userId: null }, org: null, orgId: j.o || null, orgTried: 0,
       createdAt: t, lastSeen: t, expiresAt: j.exp, rl: { start: 0, count: 0 }, cache: new Map(), refreshing: null,
     };
@@ -612,8 +614,8 @@ async function refreshAccessToken(s, cfg) {
   if (s.refreshing) return s.refreshing;
   s.refreshing = (async () => {
     try {
-      const body = new URLSearchParams({ grant_type: 'refresh_token', refresh_token: s.refreshToken, client_id: cfg.clientId });
-      if (cfg.clientSecret) body.set('client_secret', cfg.clientSecret);
+      const body = new URLSearchParams({ grant_type: 'refresh_token', refresh_token: s.refreshToken, client_id: s.clientId || cfg.clientId });
+      if (cfg.clientSecret && !s.byo) body.set('client_secret', cfg.clientSecret);
       const r = await fetchLimited(`${s.loginScheme}://${s.loginHost}/services/oauth2/token`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'application/json' },
@@ -815,6 +817,7 @@ async function epConfig(ctx) {
   const { cfg, origin } = ctx;
   sendJson(ctx, 200, {
     configured: configured(cfg),
+    ownApp: true,
     redirectUri: redirectUriFor(cfg, origin),
     origin,
     apiVersion: cfg.apiVersion,
@@ -826,7 +829,10 @@ async function epLogin(ctx) {
   const { cfg, url, req } = ctx;
   try {
     limitIp(req);
-    if (!configured(cfg)) throw new ApiError(400, 'not_configured', 'Salesforce login is not configured on this site yet (SF_CLIENT_ID is missing).');
+    const ownRaw = url.searchParams.get('client_id');
+    if (ownRaw && !OWN_CLIENT_RE.test(ownRaw)) throw new ApiError(400, 'bad_client_id', 'That Consumer Key does not look right. Copy it again from your Salesforce app (it is a long text of letters and numbers).');
+    const byo = Boolean(ownRaw);
+    if (!byo && !configured(cfg)) throw new ApiError(400, 'not_configured', 'Salesforce login is not configured on this site yet (SF_CLIENT_ID is missing).');
     const env = url.searchParams.get('env') || 'production';
     const { host, scheme } = resolveLoginHost(env, url.searchParams.get('domain'), cfg);
     const popup = url.searchParams.get('popup') === '1';
@@ -846,11 +852,11 @@ async function epLogin(ctx) {
     const state = rand(24);
     const verifier = rand(48);
     const redirectUri = redirectUriFor(cfg, ctx.origin);
-    pending.set(state, { verifier, host, scheme, popup, returnTo, redirectUri, site, createdAt: now() });
+    pending.set(state, { verifier, host, scheme, popup, returnTo, redirectUri, site, clientId: byo ? ownRaw : cfg.clientId, byo, createdAt: now() });
 
     const q = new URLSearchParams({
       response_type: 'code',
-      client_id: cfg.clientId,
+      client_id: byo ? ownRaw : cfg.clientId,
       redirect_uri: redirectUri,
       scope: SCOPE,
       state,
@@ -920,12 +926,12 @@ async function epCallback(ctx) {
   if (!lsCookie || lsCookie !== state) return fail('state_mismatch', 'This login was not started in this browser. Please start again.');
   const code = url.searchParams.get('code') || '';
   if (!code || code.length > 2048) return fail('invalid_request', 'Salesforce did not return an authorization code.');
-  if (!configured(cfg)) return fail('not_configured', 'Salesforce login is not configured on this site.');
+  if (!p.byo && !configured(cfg)) return fail('not_configured', 'Salesforce login is not configured on this site.');
 
   let tokenJson;
   try {
-    const body = new URLSearchParams({ grant_type: 'authorization_code', code, client_id: cfg.clientId, redirect_uri: p.redirectUri, code_verifier: p.verifier });
-    if (cfg.clientSecret) body.set('client_secret', cfg.clientSecret);
+    const body = new URLSearchParams({ grant_type: 'authorization_code', code, client_id: p.clientId, redirect_uri: p.redirectUri, code_verifier: p.verifier });
+    if (cfg.clientSecret && !p.byo) body.set('client_secret', cfg.clientSecret);
     const r = await fetchLimited(`${p.scheme}://${p.host}/services/oauth2/token`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'application/json' },
@@ -949,6 +955,8 @@ async function epCallback(ctx) {
     sid: rand(32),
     accessToken: tokenJson.access_token,
     refreshToken: tokenJson.refresh_token || null,
+    clientId: p.clientId,
+    byo: Boolean(p.byo),
     instanceUrl,
     loginHost: p.host,
     loginScheme: p.scheme,

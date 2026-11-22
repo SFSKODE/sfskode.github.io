@@ -1,10 +1,10 @@
 // Checks that your hosted Playground API is reachable and configured correctly.
-//   npm run check:api -- https://your-api.onrender.com https://sanjay-kumar-b.github.io
+//   npm run check:api -- https://your-api.onrender.com https://sfskode.github.io
 // (second argument = the website origin that should be allowed; default is your GitHub Pages address)
 const [apiArg, siteArg] = process.argv.slice(2);
-if (!apiArg) { console.log('Usage: npm run check:api -- <API URL> [site origin]\nExample: npm run check:api -- https://sf-skode-api.onrender.com https://sanjay-kumar-b.github.io'); process.exit(2); }
+if (!apiArg) { console.log('Usage: npm run check:api -- <API URL> [site origin]\nExample: npm run check:api -- https://sf-skode-api.onrender.com https://sfskode.github.io'); process.exit(2); }
 const api = apiArg.replace(/\/+$/, '');
-const site = (siteArg || 'https://sanjay-kumar-b.github.io').replace(/\/+$/, '');
+const site = (siteArg || 'https://sfskode.github.io').replace(/\/+$/, '');
 let bad = 0;
 const ok = (m) => console.log('  OK   ' + m);
 const no = (m, hint) => { bad++; console.log('  FAIL ' + m + (hint ? '\n       -> ' + hint : '')); };
