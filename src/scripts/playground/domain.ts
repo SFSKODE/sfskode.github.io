@@ -77,13 +77,14 @@ export function normalizeDomain(input: string): DomainResult {
 export type EnvId = 'production' | 'sandbox' | 'custom';
 
 /** `base` is the API origin when it differs from this site; `site` is this site's origin, sent so the API knows where to return the login. */
-export function loginUrl(env: EnvId, domain: string | null, opts: { popup: boolean; returnTo?: string; fresh?: boolean; base?: string; site?: string }): string {
+export function loginUrl(env: EnvId, domain: string | null, opts: { popup: boolean; returnTo?: string; fresh?: boolean; base?: string; site?: string; clientId?: string }): string {
   const q = new URLSearchParams();
   q.set('env', env);
   if (env === 'custom' && domain) q.set('domain', domain);
   if (opts.popup) q.set('popup', '1');
   q.set('returnTo', opts.returnTo ?? '/playground/');
   if (opts.fresh) q.set('fresh', '1');
+  if (opts.clientId) q.set('client_id', opts.clientId);
   if (opts.base && opts.site) q.set('site', opts.site);
   return `${opts.base ?? ''}/api/sf/login?${q.toString()}`;
 }

@@ -6,8 +6,13 @@ import { getSession, isRemote, API_BASE, TOKEN_KEY, setToken } from './api';
 /** `quick`: the click that opened this dialog also opens the Salesforce login (production). `fresh`: force the login screen. */
 interface Ctx { config: Config | null; onConnected: (s: SessionInfo) => void; reduced: boolean; quick?: boolean; fresh?: boolean }
 
-const loginOpts = (popup: boolean, fresh?: boolean) => ({ popup, returnTo: '/playground/', fresh, ...(isRemote ? { base: API_BASE, site: location.origin } : {}) });
-type Step = 'choose' | 'next' | 'connecting' | 'done' | 'error' | 'setup';
+const loginOpts = (popup: boolean, fresh?: boolean, clientId?: string) => ({ popup, returnTo: '/playground/', fresh, ...(clientId ? { clientId } : {}), ...(isRemote ? { base: API_BASE, site: location.origin } : {}) });
+type Step = 'choose' | 'next' | 'connecting' | 'done' | 'error' | 'setup' | 'own';
+const KEY_RE = /^[A-Za-z0-9._]{20,255}$/;
+const OWN_KEY = 'sfp_own_key';
+const readOwn = () => { try { return localStorage.getItem(OWN_KEY) || ''; } catch { return ''; } };
+/** The shared app is blocked in some orgs (Salesforce only lets an app work in other orgs once it is installed there). */
+const looksBlocked = (m: string) => /cross-org|not supported for this external|blocked|not installed|uninstalled|invalid[_ ]client|client identifier|approve/i.test(m);
 
 const ENV_INFO: Record<EnvId, { title: string; sub: string; host: string; icon: string }> = {
   production: { title: 'Production or Developer Edition', sub: 'Your live org or a free Developer Edition org.', host: 'login.salesforce.com', icon: '<path d="M7 18a4 4 0 0 1-.6-7.96A5.5 5.5 0 0 1 17 8.5a4.5 4.5 0 0 1 .5 9z"/>' },
@@ -27,6 +32,9 @@ export function openConnect(dlg: HTMLDialogElement, ctx: Ctx) {
   let timer = 0;
   let dir = 1;
   let result: SessionInfo | null = null;
+  let ownKey = readOwn();      // Consumer Key of an app in the visitor's own org
+  let useOwn = false;          // true once the visitor chose to connect with it
+  let ownErr = '';
 
   const cleanup = () => { window.clearInterval(timer); window.removeEventListener('message', onMessage); window.removeEventListener('storage', onStorage); popup?.close?.(); popup = null; };
   const close = () => { cleanup(); if (dlg.open) dlg.close(); };
@@ -38,7 +46,7 @@ export function openConnect(dlg: HTMLDialogElement, ctx: Ctx) {
   }
   const dots = () => {
     const order: Step[] = ['choose', 'next', 'connecting', 'done'];
-    const i = Math.max(0, order.indexOf(step === 'error' ? 'connecting' : step));
+    const i = Math.max(0, order.indexOf(step === 'error' ? 'connecting' : step === 'own' ? 'next' : step));
     return `<ol class="dlg__steps" aria-label="Progress">${order.map((s, k) => `<li class="${k < i ? 'is-done' : k === i ? 'is-now' : ''}" ${k === i ? 'aria-current="step"' : ''}><span class="sr-only">${s}</span></li>`).join('')}</ol>`;
   };
 
@@ -77,8 +85,24 @@ export function openConnect(dlg: HTMLDialogElement, ctx: Ctx) {
           <label for="cn-domain">Your My Domain</label>
           <input id="cn-domain" type="text" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="acme.my.salesforce.com" value="${esc(domainRaw)}" aria-describedby="cn-domain-msg" ${domainErr ? 'aria-invalid="true"' : ''}>
           <p id="cn-domain-msg" class="dom__msg${domainErr ? ' is-bad' : ''}" role="alert">${domainErr ? esc(domainErr) : 'Paste the address from your browser, we will clean it up.'}</p>
-        </div></div>
+        </div>
+        <p class="dlg__fine dlg__alt">Blocked in your org? <button class="linkbtn" type="button" data-own>Connect with your own app instead</button></p></div>
         <footer class="dlg__foot"><button class="btn" type="button" data-close>Cancel</button><button class="btn btn--primary" type="button" data-next>Continue</button></footer>`;
+    }
+    if (step === 'own') {
+      const uri = esc(ctx.config?.redirectUri ?? '');
+      const host = env === 'custom' ? esc(domainRaw || 'your My Domain') : ENV_INFO[env].host;
+      return `${header('Connect with your own app', 'Takes about two minutes, once. The app lives in your org, so no one else is involved.')}${dots()}
+        <div class="dlg__body"><ol class="dlg__how">
+          <li>In your org open <b>Setup</b> → <b>External Client App Manager</b> → <b>New External Client App</b>. Name it anything, add your email.</li>
+          <li>Tick <b>Enable OAuth</b>. Callback URL: <span class="dlg__code" data-copy="${uri}">${uri}</span> <small>(click to copy)</small></li>
+          <li>Scopes: <b>api</b>, <b>refresh_token</b>, <b>web</b>. Tick <b>Require PKCE</b>, untick both <b>Require Secret</b> boxes. Create it.</li>
+          <li>On the app's <b>Policies</b> tab set Permitted Users to <b>All users may self-authorize</b>. Then <b>Settings</b> → <b>OAuth Settings</b> → <b>Consumer Key and Secret</b>, and copy the <b>Consumer Key</b>.</li>
+        </ol>
+        <div class="dom"><label for="cn-key">Your Consumer Key</label>
+          <input id="cn-key" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="3MVG9…" value="${esc(ownKey)}" aria-describedby="cn-key-msg" ${ownErr ? 'aria-invalid="true"' : ''}>
+          <p id="cn-key-msg" class="dom__msg${ownErr ? ' is-bad' : ''}" role="alert">${ownErr ? esc(ownErr) : `It is only used to log you in at <b>${host}</b>. It is not a password.`}</p></div></div>
+        <footer class="dlg__foot"><button class="btn" type="button" data-back>Back</button><button class="btn btn--primary" type="button" data-go-own>Open Salesforce login</button></footer>`;
     }
     if (step === 'next') {
       const host = env === 'custom' ? esc(normalizeDomain(domainRaw).ok ? (normalizeDomain(domainRaw) as { host: string }).host : domainRaw) : ENV_INFO[env].host;
@@ -109,8 +133,11 @@ export function openConnect(dlg: HTMLDialogElement, ctx: Ctx) {
     return `${header('Could not connect')}${dots()}
       <div class="dlg__body dlg__body--c"><div class="hs-wrap">${handshake('bad')}</div>
       <p class="dlg__lead">${esc(errMsg || 'Something went wrong while connecting.')}</p>
-      <p class="dlg__fine">Check that you picked the right environment (sandbox orgs use a different login) and try again.</p></div>
-      <footer class="dlg__foot"><button class="btn" type="button" data-close>Close</button><button class="btn btn--primary" type="button" data-retry>Try again</button></footer>`;
+      ${looksBlocked(errMsg) && !useOwn
+        ? `<p class="dlg__fine">Salesforce only lets a shared app work in your org once it is installed there. You can connect with a small app in your own org instead.</p></div>
+      <footer class="dlg__foot"><button class="btn" type="button" data-close>Close</button><button class="btn btn--primary" type="button" data-own>Use my own app</button></footer>`
+        : `<p class="dlg__fine">Check that you picked the right environment (sandbox orgs use a different login) and try again.${useOwn ? ' Also check the callback URL and that the Consumer Key is from the same org.' : ''}</p></div>
+      <footer class="dlg__foot"><button class="btn" type="button" data-close>Close</button>${useOwn ? '' : '<button class="btn" type="button" data-own>Use my own app</button>'}<button class="btn btn--primary" type="button" data-retry>Try again</button></footer>`}`;
   }
 
   function draw(animate: boolean) {
@@ -141,13 +168,21 @@ export function openConnect(dlg: HTMLDialogElement, ctx: Ctx) {
     input?.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); next(); } });
     dlg.querySelector('[data-next]')?.addEventListener('click', next);
     dlg.querySelector('[data-back]')?.addEventListener('click', () => go('choose', -1));
+    dlg.querySelectorAll('[data-own]').forEach((b) => b.addEventListener('click', () => { cleanup(); go('own'); }));
+    const keyIn = dlg.querySelector<HTMLInputElement>('#cn-key');
+    keyIn?.addEventListener('input', () => {
+      ownKey = keyIn.value.trim();
+      if (ownErr) { ownErr = ''; keyIn.removeAttribute('aria-invalid'); const m = dlg.querySelector('#cn-key-msg'); if (m) { m.classList.remove('is-bad'); m.textContent = 'It is only used to log you in. It is not a password.'; } }
+    });
+    keyIn?.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); startOwn(); } });
+    dlg.querySelector('[data-go-own]')?.addEventListener('click', startOwn);
     dlg.querySelector('[data-go]')?.addEventListener('click', start);
     dlg.querySelector('[data-cancel]')?.addEventListener('click', () => { cleanup(); if (ctx.quick) close(); else go('next', -1); });
     dlg.querySelector('[data-other]')?.addEventListener('click', () => { cleanup(); go('choose', -1); });
-    dlg.querySelector('[data-retry]')?.addEventListener('click', () => go('choose', -1));
+    dlg.querySelector('[data-retry]')?.addEventListener('click', () => go(useOwn ? 'own' : 'choose', -1));
     dlg.querySelector('[data-redirect]')?.addEventListener('click', () => {
       cleanup();
-      location.href = loginUrl(env, env === 'custom' ? validateDomain() : null, loginOpts(false, ctx.fresh));
+      location.href = loginUrl(env, env === 'custom' ? validateDomain() : null, loginOpts(false, ctx.fresh, useOwn ? ownKey : undefined));
     });
     dlg.querySelectorAll<HTMLElement>('[data-copy]').forEach((el) => el.addEventListener('click', () => { void navigator.clipboard?.writeText(el.dataset.copy || ''); el.classList.add('is-copied'); window.setTimeout(() => el.classList.remove('is-copied'), 1200); }));
   }
@@ -189,13 +224,21 @@ export function openConnect(dlg: HTMLDialogElement, ctx: Ctx) {
     } catch (e) { errMsg = (e as Error).message; cleanup(); go('error'); }
   }
 
+  function startOwn() {
+    const k = (dlg.querySelector<HTMLInputElement>('#cn-key')?.value ?? ownKey).trim();
+    if (!KEY_RE.test(k)) { ownKey = k; ownErr = 'That does not look like a Consumer Key. It is a long text of letters and numbers, usually starting with 3MVG.'; draw(false); dlg.querySelector<HTMLInputElement>('#cn-key')?.focus(); return; }
+    ownKey = k; useOwn = true;
+    try { localStorage.setItem(OWN_KEY, k); } catch { /* storage blocked: fine */ }
+    start();
+  }
+
   function start() {
     const host = env === 'custom' ? validateDomain() : null;
     if (env === 'custom' && !host) { go('choose', -1); return; }
     const w = 520, h = 720;
     const left = Math.max(0, Math.round(window.screenX + (window.outerWidth - w) / 2));
     const top = Math.max(0, Math.round(window.screenY + (window.outerHeight - h) / 2));
-    popup = window.open(loginUrl(env, host, loginOpts(true, ctx.fresh)), 'sf-connect', `popup=yes,width=${w},height=${h},left=${left},top=${top}`);
+    popup = window.open(loginUrl(env, host, loginOpts(true, ctx.fresh, useOwn ? ownKey : undefined)), 'sf-connect', `popup=yes,width=${w},height=${h},left=${left},top=${top}`);
     if (!popup) { errMsg = 'Your browser blocked the login window. Allow pop-ups for this site, or log in on this page instead.'; go('error'); return; }
     window.addEventListener('message', onMessage);
     window.addEventListener('storage', onStorage);

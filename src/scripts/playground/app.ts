@@ -63,6 +63,7 @@ function tablist(list: HTMLElement, attr: string, onSelect: (v: string) => void)
 
 /* ------------------------------ state ------------------------------ */
 let config: api.Config | null = null;
+let configFailed = false;
 let session: api.SessionInfo = { connected: false };
 let lang: Lang = store.lang;
 let activeChallenge: Challenge | null = null;
@@ -142,6 +143,14 @@ async function suggestions(ctx: Context, l: Lang): Promise<Suggestion[]> {
 /* ------------------------------ connection ------------------------------ */
 const connEl = $('[data-conn]');
 const banner = $('[data-banner]');
+/** The Playground server cannot be reached: say why, in terms that fit where the site is hosted. */
+function drawServiceDown() {
+  const local = ['localhost', '127.0.0.1'].includes(location.hostname);
+  showBanner(api.isRemote || local || !navigator.onLine
+    ? 'Could not reach the playground service. If it was idle, wait a minute and reload.'
+    : 'The Playground server is not connected to this website yet. Site owner: build the site with <code>PUBLIC_SF_API_URL</code> set to your API address (see <code>GO-LIVE-PLAYGROUND.md</code>).', 'err');
+}
+
 function showBanner(html: string, kind: 'warn' | 'err' = 'warn') {
   banner.hidden = false; banner.className = `pg__banner container pg__banner--${kind}`; banner.innerHTML = html;
 }
@@ -165,6 +174,7 @@ function drawConn() {
 }
 
 function openConnectDialog() {
+  if (configFailed) { drawServiceDown(); return; }   // no server to log in through: do not open a window that can only show an error
   // One click: the dialog opens and the Salesforce login window opens with it (login.salesforce.com).
   openConnect($('[data-connect-dlg]'), {
     config, reduced, quick: true, fresh: session.connected,
@@ -505,7 +515,7 @@ results.empty(false);
   const qs = new URLSearchParams(location.search);
   const arrived = api.takeTokenFromUrl();           // hosted API: this window was opened by the login with the token in the URL
   if (arrived?.popup) { try { window.close(); } catch { /* not allowed: carry on as a normal tab */ } }
-  try { config = await api.getConfig(); } catch { showBanner('Could not reach the playground service. Check your connection and reload.', 'err'); }
+  try { config = await api.getConfig(); } catch { configFailed = true; drawServiceDown(); }
   try { session = await api.getSession(); } catch { session = { connected: false }; }
   drawConn(); drawObjects(); if (session.connected) results.empty(true);
   if (qs.get('connected')) toast('Connected to Salesforce');
