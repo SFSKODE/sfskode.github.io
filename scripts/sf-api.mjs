@@ -837,6 +837,8 @@ async function epLogin(ctx) {
     const { host, scheme } = resolveLoginHost(env, url.searchParams.get('domain'), cfg);
     const popup = url.searchParams.get('popup') === '1';
     const fresh = url.searchParams.get('fresh') === '1';
+    const hintRaw = url.searchParams.get('login_hint') || '';
+    const hint = /^[A-Za-z0-9._%+'-]{1,64}@[A-Za-z0-9.-]{1,120}$/.test(hintRaw) ? hintRaw : '';   // only pre-fills the username box; ignored when malformed
     const returnTo = safeReturnTo(url.searchParams.get('returnTo'));
     let site = '';
     const siteRaw = url.searchParams.get('site');
@@ -864,6 +866,7 @@ async function epLogin(ctx) {
       code_challenge_method: 'S256',
     });
     if (fresh) q.set('prompt', 'login');
+    if (hint) q.set('login_hint', hint);
     ctx.cookies.push(cookieHeader(STATE_COOKIE, state, { secure: ctx.secure, maxAge: 600, path: '/api/sf/' }));
     sendRedirect(ctx, `${scheme}://${host}/services/oauth2/authorize?${q.toString().replace(/\+/g, '%20')}`);
   } catch (err) {
