@@ -10,7 +10,7 @@ export interface SessionInfo {
   apiVersion?: string;
   expiresInSec?: number;
 }
-export interface Config { configured: boolean; redirectUri: string; origin: string; apiVersion: string; environments: { id: string; label: string; host: string | null }[] }
+export interface Config { configured: boolean; ownApp?: boolean; redirectUri: string; origin: string; apiVersion: string; environments: { id: string; label: string; host: string | null }[] }
 export interface ApiFail { ok: false; error: string; message: string; status?: number }
 export class ApiError extends Error {
   code: string; status: number;

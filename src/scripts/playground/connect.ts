@@ -8,6 +8,9 @@ interface Ctx { config: Config | null; onConnected: (s: SessionInfo) => void; re
 
 const loginOpts = (popup: boolean, fresh?: boolean, clientId?: string) => ({ popup, returnTo: '/playground/', fresh, ...(clientId ? { clientId } : {}), ...(isRemote ? { base: API_BASE, site: location.origin } : {}) });
 type Step = 'choose' | 'next' | 'connecting' | 'done' | 'error' | 'setup' | 'own';
+// Optional: install link of the SF SKODE Connector 2GP package (see connector/README.md). Only a real Salesforce install link is accepted.
+const PKG_RAW = String((import.meta as any).env?.PUBLIC_SF_PACKAGE_URL ?? '').trim();
+const PKG_URL = /^https:\/\/(login|test)\.salesforce\.com\/packaging\/installPackage\.apexp\?p0=04t[A-Za-z0-9]{12,15}$/.test(PKG_RAW) ? PKG_RAW : '';
 const KEY_RE = /^[A-Za-z0-9._]{20,255}$/;
 const OWN_KEY = 'sfp_own_key';
 const readOwn = () => { try { return localStorage.getItem(OWN_KEY) || ''; } catch { return ''; } };
@@ -99,10 +102,11 @@ export function openConnect(dlg: HTMLDialogElement, ctx: Ctx) {
           <li>Scopes: <b>api</b>, <b>refresh_token</b>, <b>web</b>. Tick <b>Require PKCE</b>, untick both <b>Require Secret</b> boxes. Create it.</li>
           <li>On the app's <b>Policies</b> tab set Permitted Users to <b>All users may self-authorize</b>. Then <b>Settings</b> → <b>OAuth Settings</b> → <b>Consumer Key and Secret</b>, and copy the <b>Consumer Key</b>.</li>
         </ol>
+        ${ctx.config && !ctx.config.ownApp ? `<p class="dom__msg is-bad" role="alert"><b>The Playground server is out of date</b> and would ignore your key (you would get the same "Cross-org" error). The site owner needs to redeploy the API with the latest <code>scripts/sf-api.mjs</code>.</p>` : ''}
         <div class="dom"><label for="cn-key">Your Consumer Key</label>
           <input id="cn-key" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="3MVG9…" value="${esc(ownKey)}" aria-describedby="cn-key-msg" ${ownErr ? 'aria-invalid="true"' : ''}>
           <p id="cn-key-msg" class="dom__msg${ownErr ? ' is-bad' : ''}" role="alert">${ownErr ? esc(ownErr) : `It is only used to log you in at <b>${host}</b>. It is not a password.`}</p></div></div>
-        <footer class="dlg__foot"><button class="btn" type="button" data-back>Back</button><button class="btn btn--primary" type="button" data-go-own>Open Salesforce login</button></footer>`;
+        <footer class="dlg__foot"><button class="btn" type="button" data-back>Back</button><button class="btn btn--primary" type="button" data-go-own${ctx.config && !ctx.config.ownApp ? ' disabled' : ''}>Open Salesforce login</button></footer>`;
     }
     if (step === 'next') {
       const host = env === 'custom' ? esc(normalizeDomain(domainRaw).ok ? (normalizeDomain(domainRaw) as { host: string }).host : domainRaw) : ENV_INFO[env].host;
@@ -134,8 +138,11 @@ export function openConnect(dlg: HTMLDialogElement, ctx: Ctx) {
       <div class="dlg__body dlg__body--c"><div class="hs-wrap">${handshake('bad')}</div>
       <p class="dlg__lead">${esc(errMsg || 'Something went wrong while connecting.')}</p>
       ${looksBlocked(errMsg) && !useOwn
-        ? `<p class="dlg__fine">Salesforce only lets a shared app work in your org once it is installed there. You can connect with a small app in your own org instead.</p></div>
-      <footer class="dlg__foot"><button class="btn" type="button" data-close>Close</button><button class="btn btn--primary" type="button" data-own>Use my own app</button></footer>`
+        ? (PKG_URL
+          ? `<p class="dlg__fine">Salesforce only lets a shared app work in your org once it is installed there. <b>Install the free SF SKODE connector</b> in your org (one time, opens Salesforce; choose <i>Install for Admins Only</i>), then come back and try again. No access is given until you log in and click Allow.</p></div>
+      <footer class="dlg__foot"><button class="btn" type="button" data-close>Close</button><button class="btn" type="button" data-own>Use my own app</button><button class="btn" type="button" data-retry>Try again</button><a class="btn btn--primary" href="${PKG_URL}" target="_blank" rel="noopener noreferrer">Install the connector</a></footer>`
+          : `<p class="dlg__fine">Salesforce only lets a shared app work in your org once it is installed there. You can connect with a small app in your own org instead.</p></div>
+      <footer class="dlg__foot"><button class="btn" type="button" data-close>Close</button><button class="btn btn--primary" type="button" data-own>Use my own app</button></footer>`)
         : `<p class="dlg__fine">Check that you picked the right environment (sandbox orgs use a different login) and try again.${useOwn ? ' Also check the callback URL and that the Consumer Key is from the same org.' : ''}</p></div>
       <footer class="dlg__foot"><button class="btn" type="button" data-close>Close</button>${useOwn ? '' : '<button class="btn" type="button" data-own>Use my own app</button>'}<button class="btn btn--primary" type="button" data-retry>Try again</button></footer>`}`;
   }
