@@ -175,9 +175,9 @@ function drawConn() {
 
 function openConnectDialog() {
   if (configFailed) { drawServiceDown(); return; }   // no server to log in through: do not open a window that can only show an error
-  // One click: the dialog opens and the Salesforce login window opens with it (login.salesforce.com).
+  // The dialog lists the orgs used before on this device and lets the visitor pick Production, Sandbox or a My Domain.
   openConnect($('[data-connect-dlg]'), {
-    config, reduced, quick: true, fresh: session.connected,
+    config, reduced,
     onConnected: (s) => { session = s; hideBanner(); drawConn(); drawObjects(); results.empty(true); },
   });
 }

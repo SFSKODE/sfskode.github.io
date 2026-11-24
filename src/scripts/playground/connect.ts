@@ -3,11 +3,25 @@ import { normalizeDomain, loginUrl, type EnvId } from './domain';
 import type { Config, SessionInfo } from './api';
 import { getSession, isRemote, API_BASE, TOKEN_KEY, setToken } from './api';
 
-/** `quick`: the click that opened this dialog also opens the Salesforce login (production). `fresh`: force the login screen. */
-interface Ctx { config: Config | null; onConnected: (s: SessionInfo) => void; reduced: boolean; quick?: boolean; fresh?: boolean }
+interface Ctx { config: Config | null; onConnected: (s: SessionInfo) => void; reduced: boolean }
 
-const loginOpts = (popup: boolean, fresh?: boolean, clientId?: string) => ({ popup, returnTo: '/playground/', fresh, ...(clientId ? { clientId } : {}), ...(isRemote ? { base: API_BASE, site: location.origin } : {}) });
-type Step = 'choose' | 'next' | 'connecting' | 'done' | 'error' | 'setup' | 'own';
+/** `fresh` is always on: Salesforce then shows its login screen even when this browser is still logged in there, so the visitor can pick any org or user (otherwise it silently re-connects the previous one). */
+const loginOpts = (popup: boolean, clientId?: string, hint?: string) => ({ popup, returnTo: '/playground/', fresh: true, ...(clientId ? { clientId } : {}), ...(hint ? { hint } : {}), ...(isRemote ? { base: API_BASE, site: location.origin } : {}) });
+type Step = 'choose' | 'connecting' | 'done' | 'error' | 'setup' | 'own';
+
+// Orgs this visitor connected before, remembered on this device only. Names and usernames, never tokens or passwords.
+const ORGS_KEY = 'sfp_orgs';
+interface Saved { env: EnvId; host: string | null; name: string; username: string; sandbox: boolean; own: boolean }
+const readOrgs = (): Saved[] => {
+  try {
+    const a = JSON.parse(localStorage.getItem(ORGS_KEY) || '[]');
+    if (!Array.isArray(a)) return [];
+    return a.filter((o) => o && ['production', 'sandbox', 'custom'].includes(o.env) && typeof o.username === 'string' && typeof o.name === 'string' && (o.host === null || typeof o.host === 'string') && (o.env !== 'custom' || o.host)).slice(0, 4)
+      .map((o) => ({ env: o.env, host: o.host ?? null, name: String(o.name).slice(0, 80), username: String(o.username).slice(0, 120), sandbox: Boolean(o.sandbox), own: Boolean(o.own) }));
+  } catch { return []; }
+};
+const writeOrgs = (list: Saved[]) => { try { localStorage.setItem(ORGS_KEY, JSON.stringify(list.slice(0, 4))); } catch { /* storage blocked: the list just is not remembered */ } };
+const sameOrg = (a: Saved, b: Saved) => a.username.toLowerCase() === b.username.toLowerCase() && a.env === b.env && a.host === b.host;
 // Optional: install link of the SF SKODE Connector 2GP package (see connector/README.md). Only a real Salesforce install link is accepted.
 const PKG_RAW = String((import.meta as any).env?.PUBLIC_SF_PACKAGE_URL ?? '').trim();
 const PKG_URL = /^https:\/\/(login|test)\.salesforce\.com\/packaging\/installPackage\.apexp\?p0=04t[A-Za-z0-9]{12,15}$/.test(PKG_RAW) ? PKG_RAW : '';
@@ -27,6 +41,8 @@ const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&l
 
 export function openConnect(dlg: HTMLDialogElement, ctx: Ctx) {
   let step: Step = ctx.config && !ctx.config.configured ? 'setup' : 'choose';
+  let saved = readOrgs();
+  let hint = '';               // username to pre-fill on the Salesforce login page (only when a remembered org was picked)
   let env: EnvId = 'production';
   let domainRaw = '';
   let domainErr = '';
@@ -48,8 +64,8 @@ export function openConnect(dlg: HTMLDialogElement, ctx: Ctx) {
     return `<header class="dlg__head"><div><h2 id="cn-title">${title}</h2>${sub ? `<p>${sub}</p>` : ''}</div><button class="dlg__x" type="button" data-close aria-label="Close">${svg('<path d="M6 6l12 12M18 6 6 18"/>', 20)}</button></header>`;
   }
   const dots = () => {
-    const order: Step[] = ['choose', 'next', 'connecting', 'done'];
-    const i = Math.max(0, order.indexOf(step === 'error' ? 'connecting' : step === 'own' ? 'next' : step));
+    const order: Step[] = ['choose', 'connecting', 'done'];
+    const i = Math.max(0, order.indexOf(step === 'error' ? 'connecting' : step === 'own' ? 'choose' : step));
     return `<ol class="dlg__steps" aria-label="Progress">${order.map((s, k) => `<li class="${k < i ? 'is-done' : k === i ? 'is-now' : ''}" ${k === i ? 'aria-current="step"' : ''}><span class="sr-only">${s}</span></li>`).join('')}</ol>`;
   };
 
@@ -82,15 +98,17 @@ export function openConnect(dlg: HTMLDialogElement, ctx: Ctx) {
         const e = ENV_INFO[id];
         return `<label class="envc${env === id ? ' is-on' : ''}"><input type="radio" name="env" value="${id}" ${env === id ? 'checked' : ''}><span class="envc__ic">${svg(e.icon)}</span><span class="envc__t"><b>${e.title}</b><small>${e.sub}</small></span><span class="envc__h">${e.host}</span></label>`;
       }).join('');
-      return `${header('Connect your Salesforce org', 'Pick the kind of org you want to log in to.')}${dots()}
-        <div class="dlg__body"><div class="envs" role="radiogroup" aria-label="Environment">${cards}</div>
+      const recent = saved.length ? `<div class="orgs"><h3 class="orgs__h">Your recent orgs</h3><ul class="orgs__l">${saved.map((o, i) => `<li class="orgs__i"><button class="orgc" type="button" data-org="${i}"><span class="orgc__t"><b>${esc(o.name || o.username)}</b><small>${esc(o.username)}</small></span><span class="pill ${o.sandbox ? 'pill--sb' : 'pill--prod'}">${o.sandbox ? 'Sandbox' : 'Production'}</span></button><button class="orgs__x" type="button" data-forget="${i}" aria-label="Remove ${esc(o.username)} from this list" title="Remove from this list">${svg('<path d="M6 6l12 12M18 6 6 18"/>', 16)}</button></li>`).join('')}</ul><h3 class="orgs__h orgs__h--2">Or connect another org</h3></div>` : '';
+      return `${header('Connect your Salesforce org', saved.length ? 'Pick an org you used before, or log in to a different one.' : 'Pick the kind of org you want to log in to.')}${dots()}
+        <div class="dlg__body">${recent}<div class="envs" role="radiogroup" aria-label="Environment">${cards}</div>
         <div class="dom" ${env === 'custom' ? '' : 'hidden'}>
           <label for="cn-domain">Your My Domain</label>
           <input id="cn-domain" type="text" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="acme.my.salesforce.com" value="${esc(domainRaw)}" aria-describedby="cn-domain-msg" ${domainErr ? 'aria-invalid="true"' : ''}>
           <p id="cn-domain-msg" class="dom__msg${domainErr ? ' is-bad' : ''}" role="alert">${domainErr ? esc(domainErr) : 'Paste the address from your browser, we will clean it up.'}</p>
         </div>
+        <p class="dlg__fine">A Salesforce login window opens. You log in there and click <b>Allow</b>; we never see your password. Remembered orgs are stored only in this browser, and the list never holds passwords or tokens.</p>
         <p class="dlg__fine dlg__alt">Blocked in your org? <button class="linkbtn" type="button" data-own>Connect with your own app instead</button></p></div>
-        <footer class="dlg__foot"><button class="btn" type="button" data-close>Cancel</button><button class="btn btn--primary" type="button" data-next>Continue</button></footer>`;
+        <footer class="dlg__foot"><button class="btn" type="button" data-close>Cancel</button><button class="btn btn--primary" type="button" data-next>Open Salesforce login</button></footer>`;
     }
     if (step === 'own') {
       const uri = esc(ctx.config?.redirectUri ?? '');
@@ -107,17 +125,6 @@ export function openConnect(dlg: HTMLDialogElement, ctx: Ctx) {
           <input id="cn-key" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="3MVG9…" value="${esc(ownKey)}" aria-describedby="cn-key-msg" ${ownErr ? 'aria-invalid="true"' : ''}>
           <p id="cn-key-msg" class="dom__msg${ownErr ? ' is-bad' : ''}" role="alert">${ownErr ? esc(ownErr) : `It is only used to log you in at <b>${host}</b>. It is not a password.`}</p></div></div>
         <footer class="dlg__foot"><button class="btn" type="button" data-back>Back</button><button class="btn btn--primary" type="button" data-go-own${ctx.config && !ctx.config.ownApp ? ' disabled' : ''}>Open Salesforce login</button></footer>`;
-    }
-    if (step === 'next') {
-      const host = env === 'custom' ? esc(normalizeDomain(domainRaw).ok ? (normalizeDomain(domainRaw) as { host: string }).host : domainRaw) : ENV_INFO[env].host;
-      return `${header('Here is what happens next')}${dots()}
-        <div class="dlg__body"><div class="hs-wrap">${handshake('idle')}</div>
-        <ol class="dlg__how">
-          <li>A secure <b>Salesforce login window</b> opens at <span class="dlg__code">${host}</span>.</li>
-          <li>You log in there and click <b>Allow</b>. We never see your password.</li>
-          <li>The window closes and this page is connected. You can disconnect any time.</li>
-        </ol><p class="dlg__fine">Practise in a sandbox or Developer Edition org when you can: code you run here executes for real.</p></div>
-        <footer class="dlg__foot"><button class="btn" type="button" data-back>Back</button><button class="btn btn--primary" type="button" data-go>Open Salesforce login</button></footer>`;
     }
     if (step === 'connecting') {
       return `${header('Waiting for Salesforce…')}${dots()}
@@ -164,7 +171,7 @@ export function openConnect(dlg: HTMLDialogElement, ctx: Ctx) {
   function wire() {
     dlg.querySelectorAll('[data-close]').forEach((b) => b.addEventListener('click', close));
     dlg.querySelectorAll<HTMLInputElement>('input[name=env]').forEach((r) => r.addEventListener('change', () => {
-      env = r.value as EnvId;
+      env = r.value as EnvId; hint = ''; useOwn = false;
       dlg.querySelectorAll('.envc').forEach((c) => c.classList.toggle('is-on', (c.querySelector('input') as HTMLInputElement).checked));
       const dom = dlg.querySelector<HTMLElement>('.dom')!;
       dom.hidden = env !== 'custom';
@@ -175,6 +182,10 @@ export function openConnect(dlg: HTMLDialogElement, ctx: Ctx) {
     input?.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); next(); } });
     dlg.querySelector('[data-next]')?.addEventListener('click', next);
     dlg.querySelector('[data-back]')?.addEventListener('click', () => go('choose', -1));
+    dlg.querySelectorAll<HTMLElement>('[data-org]').forEach((b) => b.addEventListener('click', () => pickSaved(Number(b.dataset.org))));
+    dlg.querySelectorAll<HTMLElement>('[data-forget]').forEach((b) => b.addEventListener('click', () => {
+      saved.splice(Number(b.dataset.forget), 1); writeOrgs(saved); draw(false);
+    }));
     dlg.querySelectorAll('[data-own]').forEach((b) => b.addEventListener('click', () => { cleanup(); go('own'); }));
     const keyIn = dlg.querySelector<HTMLInputElement>('#cn-key');
     keyIn?.addEventListener('input', () => {
@@ -183,13 +194,12 @@ export function openConnect(dlg: HTMLDialogElement, ctx: Ctx) {
     });
     keyIn?.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); startOwn(); } });
     dlg.querySelector('[data-go-own]')?.addEventListener('click', startOwn);
-    dlg.querySelector('[data-go]')?.addEventListener('click', start);
-    dlg.querySelector('[data-cancel]')?.addEventListener('click', () => { cleanup(); if (ctx.quick) close(); else go('next', -1); });
+    dlg.querySelector('[data-cancel]')?.addEventListener('click', () => { cleanup(); go('choose', -1); });
     dlg.querySelector('[data-other]')?.addEventListener('click', () => { cleanup(); go('choose', -1); });
     dlg.querySelector('[data-retry]')?.addEventListener('click', () => go(useOwn ? 'own' : 'choose', -1));
     dlg.querySelector('[data-redirect]')?.addEventListener('click', () => {
       cleanup();
-      location.href = loginUrl(env, env === 'custom' ? validateDomain() : null, loginOpts(false, ctx.fresh, useOwn ? ownKey : undefined));
+      location.href = loginUrl(env, env === 'custom' ? validateDomain() : null, loginOpts(false, useOwn ? ownKey : undefined, hint));
     });
     dlg.querySelectorAll<HTMLElement>('[data-copy]').forEach((el) => el.addEventListener('click', () => { void navigator.clipboard?.writeText(el.dataset.copy || ''); el.classList.add('is-copied'); window.setTimeout(() => el.classList.remove('is-copied'), 1200); }));
   }
@@ -200,7 +210,27 @@ export function openConnect(dlg: HTMLDialogElement, ctx: Ctx) {
       if (!host) { draw(false); dlg.querySelector<HTMLInputElement>('#cn-domain')?.focus(); return; }
       domainRaw = host;
     }
-    go('next');
+    hint = ''; useOwn = false;
+    start();
+  }
+
+  /** One click on a remembered org: same environment, username pre-filled on the Salesforce login page. */
+  function pickSaved(i: number) {
+    const o = saved[i];
+    if (!o) return;
+    env = o.env; domainRaw = o.host ?? ''; hint = o.username;
+    useOwn = o.own && KEY_RE.test(ownKey);
+    if (o.own && !useOwn) { go('own'); return; }   // it was connected with the visitor's own app and the key is gone: ask for it again
+    start();
+  }
+
+  function remember(s: SessionInfo) {
+    if (!s.user?.username) return;
+    const host = env === 'custom' ? (normalizeDomain(domainRaw).ok ? (normalizeDomain(domainRaw) as { host: string }).host : null) : null;
+    if (env === 'custom' && !host) return;
+    const entry: Saved = { env, host, name: s.org?.name || s.user.username, username: s.user.username, sandbox: Boolean(s.org?.isSandbox), own: useOwn };
+    saved = [entry, ...saved.filter((o) => !sameOrg(o, entry))].slice(0, 4);
+    writeOrgs(saved);
   }
 
   // The login window could not reach this tab directly and opened the site with the token instead: it saved it for us.
@@ -227,7 +257,7 @@ export function openConnect(dlg: HTMLDialogElement, ctx: Ctx) {
     try {
       const s = await getSession();
       if (!s.connected) throw new Error('The session was not created. Please try again.');
-      result = s; cleanup(); go('done'); ctx.onConnected(s);
+      result = s; remember(s); cleanup(); go('done'); ctx.onConnected(s);
     } catch (e) { errMsg = (e as Error).message; cleanup(); go('error'); }
   }
 
@@ -245,7 +275,7 @@ export function openConnect(dlg: HTMLDialogElement, ctx: Ctx) {
     const w = 520, h = 720;
     const left = Math.max(0, Math.round(window.screenX + (window.outerWidth - w) / 2));
     const top = Math.max(0, Math.round(window.screenY + (window.outerHeight - h) / 2));
-    popup = window.open(loginUrl(env, host, loginOpts(true, ctx.fresh, useOwn ? ownKey : undefined)), 'sf-connect', `popup=yes,width=${w},height=${h},left=${left},top=${top}`);
+    popup = window.open(loginUrl(env, host, loginOpts(true, useOwn ? ownKey : undefined, hint)), 'sf-connect', `popup=yes,width=${w},height=${h},left=${left},top=${top}`);
     if (!popup) { errMsg = 'Your browser blocked the login window. Allow pop-ups for this site, or log in on this page instead.'; go('error'); return; }
     window.addEventListener('message', onMessage);
     window.addEventListener('storage', onStorage);
@@ -264,7 +294,6 @@ export function openConnect(dlg: HTMLDialogElement, ctx: Ctx) {
 
   dlg.addEventListener('close', cleanup, { once: true });
   dlg.addEventListener('click', (e) => { if (e.target === dlg) close(); });
-  if (ctx.quick && step === 'choose') start();   // same click that opened the dialog: the pop-up is allowed
-  else draw(false);
+  draw(false);
   if (!dlg.open) dlg.showModal();
 }
