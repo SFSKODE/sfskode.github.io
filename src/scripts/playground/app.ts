@@ -489,10 +489,13 @@ function celebrate() {
 
 /* ------------------------------ layout bits ------------------------------ */
 tablist($('.pg__stabs'), 'data-side-tab', (v) => { $$('[data-side-panel]').forEach((p) => (p.hidden = p.dataset.sidePanel !== v)); });
-$('[data-side-toggle]').addEventListener('click', (e) => {
-  const side = $('[data-side]'); const open = !side.hasAttribute('data-open');
-  side.toggleAttribute('data-open', open); (e.currentTarget as HTMLElement).setAttribute('aria-expanded', String(open));
-});
+{ // "Tools" button: on phones it opens the side panel, on desktop it hides it so the editor and results get the full width
+  const btn = $('[data-side-toggle]'); const side = $('[data-side]'); const shell = $('[data-shell]');
+  const small = window.matchMedia('(max-width: 960px)');
+  const sync = () => btn.setAttribute('aria-expanded', String(small.matches ? side.hasAttribute('data-open') : !shell.hasAttribute('data-wide')));
+  btn.addEventListener('click', () => { if (small.matches) side.toggleAttribute('data-open'); else shell.toggleAttribute('data-wide'); sync(); });
+  small.addEventListener('change', sync); sync();
+}
 { // drag-to-resize between editor and output
   const work = $('.pg__work'); const split = $('[data-split]'); const wrap = $('[data-editor-wrap]');
   const set = (px: number) => { const v = Math.max(140, Math.min(px, work.clientHeight - 220)); wrap.style.setProperty('--ed-h', `${v}px`); split.setAttribute('aria-valuenow', String(Math.round((v / work.clientHeight) * 100))); store.split = v; persist(); };

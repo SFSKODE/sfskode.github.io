@@ -7,7 +7,7 @@ const feedUrl = new URL('/rss.xml', Astro.site).toString();
 const enc = encodeURIComponent(feedUrl);
 const readers = [
   { name: 'Feedly', href: `https://feedly.com/i/subscription/feed/${enc}` },
-  { name: 'Inoreader', href: `https://www.inoreader.com/?add_feed=${enc}` },
+  { name: 'Inoreader', href: `https://www.inoreader.com/feed/${enc}` },
   { name: 'Reader app', href: `feed:${feedUrl}` },
 ];
 ---
