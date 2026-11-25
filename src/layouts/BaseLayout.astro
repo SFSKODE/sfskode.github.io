@@ -41,7 +41,7 @@ const ld = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
     {noindex && <meta name="robots" content="noindex, nofollow" />}
-    <meta name="theme-color" content="#eef4ff" />
+    <meta name="theme-color" content="#fbfbfd" />
     <meta name="color-scheme" content="dark light" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
@@ -99,12 +99,12 @@ const ld = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
         try { var f = parseInt(localStorage.getItem('fs') || '0', 10); if (f) d.style.setProperty('--fs', String(1 + Math.max(-2, Math.min(3, f)) * 0.07)); } catch (e) {}
         d.classList.add('js');
         var m = document.querySelector('meta[name="theme-color"]');
-        if (m) m.setAttribute('content', d.getAttribute('data-theme') === 'dark' ? '#0b0d11' : '#eef4ff');
+        if (m) m.setAttribute('content', d.getAttribute('data-theme') === 'dark' ? '#000000' : '#fbfbfd');
       })();
     </script>
   </head>
   <body>
-    <div class="aurora" aria-hidden="true"><i></i><i></i><i></i><s></s><canvas class="net"></canvas></div>
+    <div class="aurora" aria-hidden="true"></div>
     <a class="skip" href="#main">Skip to content</a>
     <Header currentPath={Astro.url.pathname} />
     <main id="main" tabindex="-1"><slot /></main>
@@ -121,7 +121,6 @@ const ld = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
     <script>
       import '../scripts/core';
       import '../scripts/motion';
-      import '../scripts/network';
     </script>
     {SITE.cloudflareAnalyticsToken && (
       <script is:inline defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon={JSON.stringify({ token: SITE.cloudflareAnalyticsToken })}></script>

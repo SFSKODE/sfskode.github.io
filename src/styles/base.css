@@ -65,22 +65,22 @@
     --lv-beginner: #12b58a; --lv-intermediate: #e8890c; --lv-advanced: #7b5cfa;
   }
 
-  /* ===== Light: white glass over a pale-blue aurora (default) ===== */
+  /* ===== Light: clean white and soft grey, like a product page (default) ===== */
   :root,
   :root[data-theme='light'] {
     color-scheme: light;
-    --bg: #eef4ff;
+    --bg: #fbfbfd;
     --bg-2: #ffffff;
     --bg-tint: rgba(255, 255, 255, 0.5);
     --surface: #ffffff;
-    --surface-2: #f1f6ff;
-    --surface-3: #e2ebfb;
-    --text: #0a1a33;
-    --text-2: #3a4f6e;
-    --text-3: #566a8a;
-    --line: rgba(10, 40, 90, 0.08);
-    --line-strong: rgba(10, 40, 90, 0.16);
-    --rule: rgba(10, 40, 90, 0.1);
+    --surface-2: #f5f5f7;
+    --surface-3: #e8e8ed;
+    --text: #1d1d1f;
+    --text-2: #48484c;
+    --text-3: #6e6e73;
+    --line: rgba(0, 0, 0, 0.08);
+    --line-strong: rgba(0, 0, 0, 0.16);
+    --rule: rgba(0, 0, 0, 0.1);
 
     --glass: rgba(255, 255, 255, 0.6);
     --glass-2: rgba(255, 255, 255, 0.82);
@@ -119,9 +119,7 @@
 
     --lv-beginner: #0a8a62; --lv-intermediate: #a85800; --lv-advanced: #6a45e8;
 
-    --aurora-1: #79c0ff; --aurora-2: #b9adff; --aurora-3: #7fe3f2; --aurora-4: #d4e6ff;
-    --aurora-a: 0.62;
-    --net-a: 28 96 214; --net-b: 124 92 255;   /* network lines and floor grid (r g b) */
+    --tint: 0 113 227; --tint-a: 0.08;   /* the one soft tint at the top of the page (r g b) */
     --light: rgba(255, 255, 255, 0.75);
     --grain: 0.045;
     --term-bg: #0e1319; --term-bar: #151b24; --term-text: #dbe5f3; --term-dim: #8b99ad;
@@ -131,15 +129,15 @@
   /* ===== Dark: graphite glass (neutral ink, not navy) ===== */
   :root[data-theme='dark'] {
     color-scheme: dark;
-    --bg: #0b0d11;
-    --bg-2: #11141a;
+    --bg: #000000;
+    --bg-2: #0a0a0b;
     --bg-tint: rgba(255, 255, 255, 0.03);
-    --surface: #14181f;
-    --surface-2: #1b2029;
-    --surface-3: #262d39;
-    --text: #f4f6fa;
-    --text-2: #b4bfce;
-    --text-3: #8a97aa;
+    --surface: #1d1d1f;
+    --surface-2: #2a2a2d;
+    --surface-3: #3a3a3d;
+    --text: #f5f5f7;
+    --text-2: #c7c7cc;
+    --text-3: #98989f;
     --line: rgba(255, 255, 255, 0.07);
     --line-strong: rgba(255, 255, 255, 0.15);
     --rule: rgba(255, 255, 255, 0.1);
@@ -181,9 +179,7 @@
 
     --lv-beginner: #34d399; --lv-intermediate: #fbbf24; --lv-advanced: #a78bfa;
 
-    --aurora-1: #3d78c4; --aurora-2: #6a5bc0; --aurora-3: #2c8da6; --aurora-4: #2a3a58;
-    --aurora-a: 0.3;
-    --net-a: 124 184 255; --net-b: 150 120 255;
+    --tint: 41 151 255; --tint-a: 0.16;
     --light: rgba(160, 200, 255, 0.1);
     --grain: 0.07;
     --term-bg: #0e1218; --term-bar: #151b24; --term-text: #dbe5f3; --term-dim: #8b99ad;
@@ -244,23 +240,6 @@
   .section--tight { padding-block: var(--sec-s); }
   .section--tint { background: transparent; }
 
-  /* The backdrop, front to back: two slow colour glows, a perspective grid floor that glides toward you, and a living network
-     (scripts/network.ts draws it on the canvas: drifting nodes, links that light up near the pointer, signals travelling along them).
-     A pool of light follows the pointer (scripts/motion.ts feeds --sy, --mx, --my). Purely decorative; everything stops for reduced motion. */
-  .aurora { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; contain: strict; }
-  .aurora i { position: absolute; border-radius: 50%; opacity: var(--aurora-a); will-change: transform; translate: 0 calc(var(--sy, 0) * var(--k, -0.06) * 1px); }
-  .aurora i:nth-child(1) { width: 78vmax; height: 78vmax; left: -26vmax; top: -34vmax; background: radial-gradient(closest-side, var(--aurora-1), transparent); --k: -0.05; animation: glow-a 26s ease-in-out infinite alternate; }
-  .aurora i:nth-child(2) { width: 70vmax; height: 70vmax; right: -24vmax; top: -6vmax; background: radial-gradient(closest-side, var(--aurora-2), transparent); --k: -0.09; animation: glow-b 32s ease-in-out infinite alternate; }
-  .aurora i:nth-child(3) { width: 62vmax; height: 62vmax; left: 10vmax; bottom: -34vmax; background: radial-gradient(closest-side, var(--aurora-3), transparent); --k: -0.03; animation: glow-c 36s ease-in-out infinite alternate; }
-  .aurora s { position: absolute; left: -30%; right: -30%; bottom: 0; height: 78vh; overflow: hidden; transform: perspective(430px) rotateX(66deg); transform-origin: 50% 100%; -webkit-mask-image: linear-gradient(to top, #000 10%, transparent 88%); mask-image: linear-gradient(to top, #000 10%, transparent 88%); }
-  .aurora s::before { content: ''; position: absolute; left: 0; right: 0; top: -72px; bottom: 0; background-image: linear-gradient(rgb(var(--net-a) / 0.55) 1.5px, transparent 1.5px), linear-gradient(90deg, rgb(var(--net-a) / 0.55) 1.5px, transparent 1.5px); background-size: 72px 72px; animation: floor 5s linear infinite; will-change: transform; }
-  .aurora s::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 60% 55% at 50% 100%, rgb(var(--net-b) / 0.5), transparent 72%); }
-  .aurora canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
-  .aurora::before { content: ''; position: absolute; inset: 0; background: radial-gradient(520px circle at var(--mx, 70%) var(--my, 20%), var(--light), transparent 70%); transition: opacity 0.6s; }
-  .aurora::after { content: ''; position: absolute; inset: 0; opacity: var(--grain); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .1 0 0 0 0 .2 0 0 0 0 .4 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
-  @keyframes glow-a { to { transform: translate3d(14vmax, 10vmax, 0) scale(1.14); } }
-  @keyframes glow-b { to { transform: translate3d(-16vmax, 12vmax, 0) scale(0.9); } }
-  @keyframes glow-c { to { transform: translate3d(-12vmax, -8vmax, 0) scale(1.14); } }
-  @keyframes floor { to { transform: translate3d(0, 72px, 0); } }
-  @media (max-width: 700px) { .aurora s { height: 40vh; } }
+  /* The backdrop: flat and quiet, like a product page. One very soft, static tint at the top of the page. Nothing moves. */
+  .aurora { position: fixed; inset: 0; z-index: 0; pointer-events: none; background: radial-gradient(ellipse 90% 55% at 50% -8%, rgb(var(--tint) / var(--tint-a)), transparent 72%); }
 }

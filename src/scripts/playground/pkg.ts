@@ -3,7 +3,7 @@
 import type { EnvId } from './domain';
 
 /** Subscriber Package Version Id (starts with 04t). Override with the PUBLIC_SF_PACKAGE_ID build variable after you release a new version. */
-const DEFAULT_ID = '04tdL000000s8lNQAQ';
+const DEFAULT_ID = '04tdL000000sDZlQAM';
 const ID_RE = /^04t[A-Za-z0-9]{12,15}$/;
 const raw = String((import.meta as any).env?.PUBLIC_SF_PACKAGE_ID ?? '').trim();
 const fromUrl = /[?&]p0=(04t[A-Za-z0-9]{12,15})/.exec(String((import.meta as any).env?.PUBLIC_SF_PACKAGE_URL ?? ''))?.[1];   // the old variable still works

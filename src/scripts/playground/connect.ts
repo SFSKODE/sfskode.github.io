@@ -193,27 +193,29 @@ export function openConnect(dlg: HTMLDialogElement, ctx: Ctx) {
     const input = dlg.querySelector<HTMLInputElement>('#cn-domain');
     input?.addEventListener('input', () => { domainRaw = input.value; if (domainErr) { domainErr = ''; const m = dlg.querySelector('#cn-domain-msg')!; m.textContent = 'Paste the address from your browser, we will clean it up.'; m.classList.remove('is-bad'); input.removeAttribute('aria-invalid'); } });
     input?.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); next(); } });
-    dlg.querySelector('[data-next]')?.addEventListener('click', next);
-    dlg.querySelector('[data-back]')?.addEventListener('click', () => go('choose', -1));
+    // A button can appear twice on one screen (for example "change" and "Back"), so every handler is attached to ALL matches.
+    const on = (sel: string, fn: () => void) => dlg.querySelectorAll(sel).forEach((el) => el.addEventListener('click', fn));
+    on('[data-next]', next);
+    on('[data-back]', () => { cleanup(); go('choose', -1); });
     dlg.querySelectorAll<HTMLElement>('[data-org]').forEach((b) => b.addEventListener('click', () => pickSaved(Number(b.dataset.org))));
     dlg.querySelectorAll<HTMLElement>('[data-forget]').forEach((b) => b.addEventListener('click', () => {
       saved.splice(Number(b.dataset.forget), 1); writeOrgs(saved); draw(false);
     }));
     dlg.querySelectorAll('[data-install]').forEach((b) => b.addEventListener('click', installFirst));
-    dlg.querySelector('[data-opened]')?.addEventListener('click', () => { window.setTimeout(() => { opened = true; draw(false); }, 60); });
-    dlg.querySelector('[data-after-install]')?.addEventListener('click', () => { hint = ''; useOwn = false; start(); });
-    dlg.querySelectorAll('[data-own]').forEach((b) => b.addEventListener('click', () => { cleanup(); go('own'); }));
+    on('[data-opened]', () => { window.setTimeout(() => { opened = true; draw(false); }, 60); });
+    on('[data-after-install]', () => { hint = ''; useOwn = false; start(); });
+    on('[data-own]', () => { cleanup(); go('own'); });
     const keyIn = dlg.querySelector<HTMLInputElement>('#cn-key');
     keyIn?.addEventListener('input', () => {
       ownKey = keyIn.value.trim();
       if (ownErr) { ownErr = ''; keyIn.removeAttribute('aria-invalid'); const m = dlg.querySelector('#cn-key-msg'); if (m) { m.classList.remove('is-bad'); m.textContent = 'It is only used to log you in. It is not a password.'; } }
     });
     keyIn?.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); startOwn(); } });
-    dlg.querySelector('[data-go-own]')?.addEventListener('click', startOwn);
-    dlg.querySelector('[data-cancel]')?.addEventListener('click', () => { cleanup(); go('choose', -1); });
-    dlg.querySelector('[data-other]')?.addEventListener('click', () => { cleanup(); go('choose', -1); });
-    dlg.querySelector('[data-retry]')?.addEventListener('click', () => go(useOwn ? 'own' : 'choose', -1));
-    dlg.querySelector('[data-redirect]')?.addEventListener('click', () => {
+    on('[data-go-own]', startOwn);
+    on('[data-cancel]', () => { cleanup(); go('choose', -1); });
+    on('[data-other]', () => { cleanup(); go('choose', -1); });
+    on('[data-retry]', () => go(useOwn ? 'own' : 'choose', -1));
+    on('[data-redirect]', () => {
       cleanup();
       location.href = loginUrl(env, env === 'custom' ? validateDomain() : null, loginOpts(false, useOwn ? ownKey : undefined, hint));
     });

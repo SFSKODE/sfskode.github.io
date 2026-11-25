@@ -109,24 +109,6 @@ if (mark && finePointer() && !still) {
   mark.closest('.site-footer')?.addEventListener('pointermove', (e) => { const p = e as PointerEvent; if (p.pointerType === 'mouse') paint(p.clientX, p.clientY); }, { passive: true });
 }
 
-/* ---------- Aurora: shifts a little as you scroll; a faint pool of light follows the pointer ---------- */
-const aurora = document.querySelector<HTMLElement>('.aurora');
-if (aurora && !still) {
-  const sy = frame(() => aurora.style.setProperty('--sy', String(Math.round(scrollY))));
-  addEventListener('scroll', sy, { passive: true });
-  sy();
-  if (finePointer()) {
-    let tx = innerWidth * 0.7, ty = innerHeight * 0.2, cx = tx, cy = ty, raf = 0;
-    const loop = () => {
-      cx += (tx - cx) * 0.08; cy += (ty - cy) * 0.08;
-      aurora.style.setProperty('--mx', `${cx.toFixed(0)}px`);
-      aurora.style.setProperty('--my', `${cy.toFixed(0)}px`);
-      raf = Math.abs(tx - cx) + Math.abs(ty - cy) > 0.8 ? requestAnimationFrame(loop) : 0;
-    };
-    document.addEventListener('pointermove', (e) => { if (e.pointerType !== 'mouse') return; tx = e.clientX; ty = e.clientY; if (!raf) raf = requestAnimationFrame(loop); }, { passive: true });
-  }
-}
-
 /* ---------- Tilt: [data-tilt] cards lean toward the pointer and get a lit edge (mouse only) ---------- */
 if (finePointer() && !still) {
   let cur: HTMLElement | null = null, raf = 0, lx = 0, ly = 0;
