@@ -44,7 +44,7 @@ export function setTheme(next: Theme) {
     vt.ready
       .then(() => root.animate(
         // A triangle that grows from the top-right corner. Its far edge is the straight diagonal front; the last frame covers everything.
-        { clipPath: ['polygon(100% 0, 100% 0, 100% 0)', 'polygon(100% 0, -125% 0, 100% 250%)'] },
+        { clipPath: ['circle(0px at 100% 0)', `circle(${Math.ceil(Math.hypot(innerWidth, innerHeight)) + 40}px at 100% 0)`] },
         { duration: innerWidth < 700 ? 850 : 1000, easing: 'cubic-bezier(0.65, 0, 0.35, 1)', pseudoElement: '::view-transition-new(root)' },
       ))
       .catch(() => {});

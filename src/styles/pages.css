@@ -355,11 +355,11 @@
 }
 
 /* ---------- Page transitions ---------- */
-/* Navigation reveals the next page with the same diagonal front the theme switch uses (top-right to bottom-left). */
+/* Navigation reveals the next page with the same curved front the theme switch uses (a circle growing from the top-right corner toward the bottom-left). */
 @view-transition { navigation: auto; }
 ::view-transition-old(root) { animation: vt-old 0.7s var(--ease-io) both; z-index: 1; }
 ::view-transition-new(root) { animation: vt-wipe 0.7s var(--ease-io) both; z-index: 2; }
-@keyframes vt-wipe { from { clip-path: polygon(100% 0, 100% 0, 100% 0); } to { clip-path: polygon(100% 0, -100% 0, 100% 200%); } }
+@keyframes vt-wipe { from { clip-path: circle(0 at 100% 0); } to { clip-path: circle(150vmax at 100% 0); } }
 @keyframes vt-old { to { opacity: 0.4; transform: translate(-1.2%, 1.2%) scale(0.985); } }
 /* Shared element: the clicked cover flies into place on the article (set from scripts/motion.ts) */
 ::view-transition-group(hero-cover) { animation-duration: 0.75s; animation-timing-function: var(--ease-io); z-index: 5; }
