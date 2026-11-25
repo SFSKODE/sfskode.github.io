@@ -13,7 +13,7 @@ services:
       - key: SF_CLIENT_ID
         sync: false
       - key: SF_ALLOWED_ORIGINS
-        value: https://sanjay-kumar-b.github.io
+        value: https://sfskode.github.io
       - key: SF_SESSION_SECRET
         generateValue: true
       - key: SF_CLIENT_SECRET

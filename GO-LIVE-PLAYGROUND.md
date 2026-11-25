@@ -73,6 +73,7 @@ If you ever see *"Local" apps work only in the org that owns them*: that is the 
   [Salesforce Trailhead](https://trailhead.salesforce.com/content/learn/modules/external-client-app-basics/package-and-distribute-external-client-apps).
   Also note that since September 2025 Salesforce blocks apps not installed in an org for most users
   ([Salesforce Admins](https://admin.salesforce.com/blog/2025/get-ready-for-changes-to-connected-app-usage-restrictions)).
+- **Package it:** the folder `connector/` is a Salesforce DX project that packages your app as a 2GP package (a version of it has been created against a real Dev Hub). Follow `connector/README.md`. The site then offers visitors a one-time **Install the connector** step (Playground page, Connect dialog, and the page `/playground/install/`). Remember that `SF_CLIENT_ID` and `SF_CLIENT_SECRET` on Render must be the Consumer Key and Secret of the packaged app.
 - **What the Playground does about it (already built):** when the shared app is blocked, the connect dialog shows
   **Use my own app**. The visitor creates a small External Client App **in their own org** (2 minutes, steps are shown
   in the dialog, callback URL = your API's `/api/sf/callback`), pastes its Consumer Key, and logs in through the same
