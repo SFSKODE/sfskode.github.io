@@ -2,12 +2,13 @@
 import { normalizeDomain, loginUrl, type EnvId } from './domain';
 import type { Config, SessionInfo } from './api';
 import { getSession, isRemote, API_BASE, TOKEN_KEY, setToken } from './api';
+import { installUrl } from './pkg';
 
 interface Ctx { config: Config | null; onConnected: (s: SessionInfo) => void; reduced: boolean }
 
 /** `fresh` is always on: Salesforce then shows its login screen even when this browser is still logged in there, so the visitor can pick any org or user (otherwise it silently re-connects the previous one). */
 const loginOpts = (popup: boolean, clientId?: string, hint?: string) => ({ popup, returnTo: '/playground/', fresh: true, ...(clientId ? { clientId } : {}), ...(hint ? { hint } : {}), ...(isRemote ? { base: API_BASE, site: location.origin } : {}) });
-type Step = 'choose' | 'connecting' | 'done' | 'error' | 'setup' | 'own';
+type Step = 'choose' | 'connecting' | 'done' | 'error' | 'setup' | 'own' | 'install';
 
 // Orgs this visitor connected before, remembered on this device only. Names and usernames, never tokens or passwords.
 const ORGS_KEY = 'sfp_orgs';
@@ -22,9 +23,6 @@ const readOrgs = (): Saved[] => {
 };
 const writeOrgs = (list: Saved[]) => { try { localStorage.setItem(ORGS_KEY, JSON.stringify(list.slice(0, 4))); } catch { /* storage blocked: the list just is not remembered */ } };
 const sameOrg = (a: Saved, b: Saved) => a.username.toLowerCase() === b.username.toLowerCase() && a.env === b.env && a.host === b.host;
-// Optional: install link of the SF SKODE Connector 2GP package (see connector/README.md). Only a real Salesforce install link is accepted.
-const PKG_RAW = String((import.meta as any).env?.PUBLIC_SF_PACKAGE_URL ?? '').trim();
-const PKG_URL = /^https:\/\/(login|test)\.salesforce\.com\/packaging\/installPackage\.apexp\?p0=04t[A-Za-z0-9]{12,15}$/.test(PKG_RAW) ? PKG_RAW : '';
 const KEY_RE = /^[A-Za-z0-9._]{20,255}$/;
 const OWN_KEY = 'sfp_own_key';
 const readOwn = () => { try { return localStorage.getItem(OWN_KEY) || ''; } catch { return ''; } };
@@ -54,6 +52,8 @@ export function openConnect(dlg: HTMLDialogElement, ctx: Ctx) {
   let ownKey = readOwn();      // Consumer Key of an app in the visitor's own org
   let useOwn = false;          // true once the visitor chose to connect with it
   let ownErr = '';
+  let closedEarly = false;     // the login window was closed before finishing: usually Salesforce showed its own error page
+  let opened = false;          // the visitor opened the install page
 
   const cleanup = () => { window.clearInterval(timer); window.removeEventListener('message', onMessage); window.removeEventListener('storage', onStorage); popup?.close?.(); popup = null; };
   const close = () => { cleanup(); if (dlg.open) dlg.close(); };
@@ -65,7 +65,7 @@ export function openConnect(dlg: HTMLDialogElement, ctx: Ctx) {
   }
   const dots = () => {
     const order: Step[] = ['choose', 'connecting', 'done'];
-    const i = Math.max(0, order.indexOf(step === 'error' ? 'connecting' : step === 'own' ? 'choose' : step));
+    const i = Math.max(0, order.indexOf(step === 'error' ? 'connecting' : step === 'own' || step === 'install' ? 'choose' : step));
     return `<ol class="dlg__steps" aria-label="Progress">${order.map((s, k) => `<li class="${k < i ? 'is-done' : k === i ? 'is-now' : ''}" ${k === i ? 'aria-current="step"' : ''}><span class="sr-only">${s}</span></li>`).join('')}</ol>`;
   };
 
@@ -107,8 +107,24 @@ export function openConnect(dlg: HTMLDialogElement, ctx: Ctx) {
           <p id="cn-domain-msg" class="dom__msg${domainErr ? ' is-bad' : ''}" role="alert">${domainErr ? esc(domainErr) : 'Paste the address from your browser, we will clean it up.'}</p>
         </div>
         <p class="dlg__fine">A Salesforce login window opens. You log in there and click <b>Allow</b>; we never see your password. Remembered orgs are stored only in this browser, and the list never holds passwords or tokens.</p>
-        <p class="dlg__fine dlg__alt">Blocked in your org? <button class="linkbtn" type="button" data-own>Connect with your own app instead</button></p></div>
+        ${saved.length ? `<p class="dlg__fine dlg__alt">Login says the app is not installed or blocked? <button class="linkbtn" type="button" data-install>Install the connector</button> or <button class="linkbtn" type="button" data-own>use your own app</button>.</p>`
+          : `<div class="dlg__tip"><b>First time with this org?</b><span>Salesforce asks each org to install our small login connector once. It takes about a minute and needs an admin.</span><button class="btn btn--sm" type="button" data-install>Install the connector first</button></div>
+          <p class="dlg__fine dlg__alt">Can't install anything in your org? <button class="linkbtn" type="button" data-own>Use your own app instead</button></p>`}</div>
         <footer class="dlg__foot"><button class="btn" type="button" data-close>Cancel</button><button class="btn btn--primary" type="button" data-next>Open Salesforce login</button></footer>`;
+    }
+    if (step === 'install') {
+      const host = env === 'custom' ? esc(domainRaw) : ENV_INFO[env].host;
+      const go1 = `<a class="btn ${opened ? '' : 'btn--primary'}" href="${installUrl(env, env === 'custom' ? domainRaw : null)}" target="_blank" rel="noopener noreferrer" data-opened>${opened ? 'Open the install page again' : 'Open the install page'}</a>`;
+      return `${header('Install the connector (once)', 'Salesforce lets this site log in to an org only after its small login app is installed there.')}${dots()}
+        <div class="dlg__body"><p class="dlg__fine">Installing in: <b>${ENV_INFO[env].title}</b> (${host}) · <button class="linkbtn" type="button" data-back>change</button></p>
+        <ol class="dlg__how">
+          <li><b>Open the install page</b> with the button below and log in as a <b>System Administrator</b>.</li>
+          <li>Choose <b>Install for Admins Only</b> and click <b>Install</b>. If Salesforce asks about third-party access, tick <b>Yes</b> and click <b>Continue</b>. Wait for <i>Installation complete</i>.</li>
+          <li>Come back to this tab and click <b>I installed it, connect</b>.</li>
+        </ol>
+        <p class="dlg__fine">The connector is only a login app: no code, no objects, no data. It can read nothing until you log in and click Allow. You can remove it any time in Setup → Installed Packages.</p>
+        <details class="dlg__more"><summary>Salesforce says I am not allowed to use the app?</summary><p>In Setup open <b>External Client App Manager</b> → <b>SF SKODE Connector App</b> → <b>Policies</b> → <b>Edit</b>. Under OAuth Policies set <b>Permitted Users</b> to <b>All users may self-authorize</b> and save. Then try again. If you are not an admin, send this to your admin or use <button class="linkbtn" type="button" data-own>your own app</button>.</p></details></div>
+        <footer class="dlg__foot"><button class="btn" type="button" data-back>Back</button>${go1}<button class="btn ${opened ? 'btn--primary' : ''}" type="button" data-after-install>I installed it, connect</button></footer>`;
     }
     if (step === 'own') {
       const uri = esc(ctx.config?.redirectUri ?? '');
@@ -144,12 +160,9 @@ export function openConnect(dlg: HTMLDialogElement, ctx: Ctx) {
     return `${header('Could not connect')}${dots()}
       <div class="dlg__body dlg__body--c"><div class="hs-wrap">${handshake('bad')}</div>
       <p class="dlg__lead">${esc(errMsg || 'Something went wrong while connecting.')}</p>
-      ${looksBlocked(errMsg) && !useOwn
-        ? (PKG_URL
-          ? `<p class="dlg__fine">Salesforce only lets a shared app work in your org once it is installed there. <b>Install the free SF SKODE connector</b> in your org (one time, opens Salesforce; choose <i>Install for Admins Only</i>), then come back and try again. No access is given until you log in and click Allow.</p></div>
-      <footer class="dlg__foot"><button class="btn" type="button" data-close>Close</button><button class="btn" type="button" data-own>Use my own app</button><button class="btn" type="button" data-retry>Try again</button><a class="btn btn--primary" href="${PKG_URL}" target="_blank" rel="noopener noreferrer">Install the connector</a></footer>`
-          : `<p class="dlg__fine">Salesforce only lets a shared app work in your org once it is installed there. You can connect with a small app in your own org instead.</p></div>
-      <footer class="dlg__foot"><button class="btn" type="button" data-close>Close</button><button class="btn btn--primary" type="button" data-own>Use my own app</button></footer>`)
+      ${(looksBlocked(errMsg) || closedEarly) && !useOwn
+        ? `<p class="dlg__fine">Salesforce lets a site log in to your org only after its login connector is installed there. If Salesforce showed a message like <i>“Cross-org OAuth flows are not supported”</i> or <i>“app not installed”</i>, that is the reason. <b>Install the connector once</b> (about a minute, needs an admin), then connect again. No access is given until you log in and click Allow.</p></div>
+      <footer class="dlg__foot"><button class="btn" type="button" data-close>Close</button><button class="btn" type="button" data-own>Use my own app</button><button class="btn" type="button" data-retry>Try again</button><button class="btn btn--primary" type="button" data-install>Install the connector</button></footer>`
         : `<p class="dlg__fine">Check that you picked the right environment (sandbox orgs use a different login) and try again.${useOwn ? ' Also check the callback URL and that the Consumer Key is from the same org.' : ''}</p></div>
       <footer class="dlg__foot"><button class="btn" type="button" data-close>Close</button>${useOwn ? '' : '<button class="btn" type="button" data-own>Use my own app</button>'}<button class="btn btn--primary" type="button" data-retry>Try again</button></footer>`}`;
   }
@@ -186,6 +199,9 @@ export function openConnect(dlg: HTMLDialogElement, ctx: Ctx) {
     dlg.querySelectorAll<HTMLElement>('[data-forget]').forEach((b) => b.addEventListener('click', () => {
       saved.splice(Number(b.dataset.forget), 1); writeOrgs(saved); draw(false);
     }));
+    dlg.querySelectorAll('[data-install]').forEach((b) => b.addEventListener('click', installFirst));
+    dlg.querySelector('[data-opened]')?.addEventListener('click', () => { window.setTimeout(() => { opened = true; draw(false); }, 60); });
+    dlg.querySelector('[data-after-install]')?.addEventListener('click', () => { hint = ''; useOwn = false; start(); });
     dlg.querySelectorAll('[data-own]').forEach((b) => b.addEventListener('click', () => { cleanup(); go('own'); }));
     const keyIn = dlg.querySelector<HTMLInputElement>('#cn-key');
     keyIn?.addEventListener('input', () => {
@@ -212,6 +228,17 @@ export function openConnect(dlg: HTMLDialogElement, ctx: Ctx) {
     }
     hint = ''; useOwn = false;
     start();
+  }
+
+  function installFirst() {
+    cleanup();
+    if (env === 'custom') {
+      const host = validateDomain();
+      if (!host) { go('choose', -1); return; }
+      domainRaw = host;
+    }
+    opened = false;
+    go('install');
   }
 
   /** One click on a remembered org: same environment, username pre-filled on the Salesforce login page. */
@@ -270,6 +297,7 @@ export function openConnect(dlg: HTMLDialogElement, ctx: Ctx) {
   }
 
   function start() {
+    closedEarly = false;
     const host = env === 'custom' ? validateDomain() : null;
     if (env === 'custom' && !host) { go('choose', -1); return; }
     const w = 520, h = 720;
@@ -287,7 +315,7 @@ export function openConnect(dlg: HTMLDialogElement, ctx: Ctx) {
       if (Date.now() - closedAt < 1500) return; // give a just-delivered message a moment to arrive
       window.clearInterval(timer);
       try { const s = await getSession(); if (s.connected) return void finish(); } catch { /* fall through */ }
-      errMsg = 'The Salesforce window was closed before you finished logging in.';
+      errMsg = 'The Salesforce window was closed before you finished logging in.'; closedEarly = true;
       cleanup(); go('error');
     }, 500);
   }

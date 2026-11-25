@@ -1,0 +1,77 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { installUrl, PKG_ID } from '../../scripts/playground/pkg';
+---
+
+<BaseLayout title="Connect your Salesforce org" description="One-time, one-minute setup to use the Playground with your own Salesforce org: install the free SF SKODE connector, then log in.">
+  <div class="container container--narrow">
+    <header class="page-head">
+      <h1 data-words class="display">Connect your org</h1>
+      <p>A one-time, one-minute setup. After this, connecting is a single click.</p>
+    </header>
+
+    <div class="doc section--tight">
+      <h2>Why is this needed?</h2>
+      <p>To keep your org safe, Salesforce only lets a website log in to it through an app that is installed in that org. Ours is a small, free login app called <b>SF SKODE Connector</b>. It has no code, no objects and no data. It cannot read anything in your org until you log in and click <b>Allow</b>, and we never see your password.</p>
+
+      <h2>Do this once (you need to be a System Administrator)</h2>
+      <ol class="steps">
+        <li><b>Open the install page for your kind of org.</b> Log in when Salesforce asks.
+          <div class="cards">
+            <a class="btn btn--primary" href={installUrl('production')} target="_blank" rel="noopener noreferrer">Production or Developer Edition</a>
+            <a class="btn" href={installUrl('sandbox')} target="_blank" rel="noopener noreferrer">Sandbox</a>
+          </div>
+          <form class="dom" data-my-domain data-id={PKG_ID}>
+            <label for="md">Company login address (My Domain)</label>
+            <div class="dom__row"><input id="md" type="text" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="acme.my.salesforce.com" /><button class="btn" type="submit">Open install page</button></div>
+            <p class="dom__msg" role="alert" data-md-msg>Paste the address from your browser, we will clean it up.</p>
+          </form>
+        </li>
+        <li><b>Choose "Install for Admins Only"</b> and click <b>Install</b>. If Salesforce asks about third-party access, tick <b>Yes</b> and click <b>Continue</b>.</li>
+        <li><b>Wait for "Installation complete"</b>, then close that tab.</li>
+        <li><b>Go to the <a href="/playground/">Playground</a></b>, click <b>Connect Salesforce org</b>, pick your kind of org and log in. Click <b>Allow</b> when Salesforce asks.</li>
+      </ol>
+
+      <h2>If something goes wrong</h2>
+      <h3>"Cross-org OAuth flows are not supported" or "app not installed"</h3>
+      <p>The connector is not installed in that org yet. Do the steps above, and make sure you installed it in the same org you are connecting (a Sandbox and its Production are different orgs).</p>
+      <h3>"You are not allowed to use this app" or "approval required"</h3>
+      <p>An admin needs to allow it once: Setup → <b>External Client App Manager</b> → <b>SF SKODE Connector App</b> → <b>Policies</b> → <b>Edit</b> → under OAuth Policies set <b>Permitted Users</b> to <b>All users may self-authorize</b> → Save.</p>
+      <h3>"The install page says I do not have permission"</h3>
+      <p>Installing packages needs the System Administrator profile (or the Download AppExchange Packages permission). Use a free <a href="https://developer.salesforce.com/signup" target="_blank" rel="noopener noreferrer">Developer Edition org</a> if your company org is locked down: it is yours, takes two minutes, and is ideal for practising.</p>
+      <h3>My company will not let me install anything</h3>
+      <p>In the Playground, click <b>Connect Salesforce org</b> and choose <b>Use my own app</b>. You create a tiny app in your own org and paste its Consumer Key. No package is needed.</p>
+
+      <h2>Removing it</h2>
+      <p>Setup → <b>Installed Packages</b> → <b>Uninstall</b> next to <i>SF SKODE Connector</i>. In the Playground, <b>Disconnect</b> ends the session straight away.</p>
+
+      <p><a class="btn btn--primary" href="/playground/">Back to the Playground</a></p>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .doc h3 { margin-top: 1.5em; }
+  .steps { padding-left: 1.2em; display: grid; gap: 1.1em; }
+  .cards { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+  .dom { margin-top: 14px; display: grid; gap: 6px; max-width: 34rem; }
+  .dom label { font-weight: 600; font-size: 0.95em; }
+  .dom__row { display: flex; flex-wrap: wrap; gap: 10px; }
+  .dom__row input { flex: 1 1 14rem; min-width: 0; min-height: 44px; padding: 0 14px; border-radius: 12px; border: 1.5px solid var(--line-strong); background: var(--surface); color: var(--text); font: inherit; }
+  .dom__row input:focus-visible { outline: 3px solid var(--brand); outline-offset: 2px; }
+  .dom__msg { margin: 0; font-size: 0.9em; color: var(--text-2); }
+  .dom__msg.bad { color: var(--danger); }
+</style>
+
+<script>
+  import { normalizeDomain } from '../../scripts/playground/domain';
+  const form = document.querySelector<HTMLFormElement>('[data-my-domain]');
+  form?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const msg = form.querySelector<HTMLElement>('[data-md-msg]')!;
+    const r = normalizeDomain((form.querySelector('input') as HTMLInputElement).value);
+    if (!r.ok || r.host === 'localhost') { msg.textContent = r.ok ? 'Enter your company login address.' : r.message + (r.suggestion ? ` Did you mean ${r.suggestion}?` : ''); msg.classList.add('bad'); return; }
+    msg.classList.remove('bad'); msg.textContent = `Opening the install page on ${r.host}…`;
+    window.open(`https://${r.host}/packaging/installPackage.apexp?p0=${form.dataset.id}`, '_blank', 'noopener');
+  });
+</script>

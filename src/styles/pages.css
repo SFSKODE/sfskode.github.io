@@ -349,8 +349,7 @@
     .js [data-reveal]:not(.in) { opacity: 1; translate: none; }
     .js [data-curtain]:not(.in) { clip-path: none; }
     .w > span { transform: none; }
-    .marquee__track, .stamp__ring, .aurora i, .aurora s, .aurora u { animation: none; }
-    .aurora b { display: none; }
+    .marquee__track, .stamp__ring, .aurora i, .aurora s::before { animation: none; }
     .skeleton, .card__media::before, .article__cover::before { animation: none; }
   }
 }

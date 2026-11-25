@@ -5,6 +5,7 @@
   .pg__intro { max-width: 46rem; }
   .pg__intro h1 { margin: 8px 0 8px; font-size: clamp(1.9rem, 3.6vw, 2.8rem); line-height: 1.04; letter-spacing: -0.03em; text-wrap: balance; }
   .pg__intro h1 { font-size: clamp(36px, 5.4vw, 72px); letter-spacing: -0.045em; font-weight: 740; }
+  .pg__first { margin: 10px 0 0; color: var(--text-2); font-size: 0.95rem; } .pg__first a { color: var(--brand); font-weight: 600; text-underline-offset: 3px; }
   .pg__lede { margin: 0; max-width: 40rem; color: var(--text-2); font-size: 1rem; text-wrap: pretty; }
   .pg__conn { display: grid; gap: 8px; justify-items: end; }
   .pg__hint { margin: 0; color: var(--text-3); font-size: 13px; }
@@ -285,6 +286,8 @@
   .orgc:focus-visible, .orgs__x:focus-visible { outline: 3px solid var(--focus, var(--brand)); outline-offset: 2px; }
   .orgc__t { display: grid; gap: 2px; min-width: 0; } .orgc__t b { font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .orgc__t small { color: var(--text-2); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .orgs__x { display: grid; place-items: center; width: 40px; border: 0; border-radius: 12px; background: none; color: var(--text-3); cursor: pointer; } .orgs__x:hover { background: var(--surface-2); color: var(--text); }
+  .dlg__tip { display: grid; gap: 8px; justify-items: start; margin: 14px 0 0; padding: 14px 16px; border-radius: 14px; border: 1px dashed var(--brand); background: color-mix(in srgb, var(--brand) 7%, transparent); font-size: 14px; line-height: 1.5; } .dlg__tip b { font-size: 15px; } .dlg__tip span { color: var(--text-2); }
+  .dlg__more { margin-top: 12px; font-size: 14px; } .dlg__more summary { cursor: pointer; color: var(--brand); font-weight: 600; } .dlg__more p { margin: 8px 0 0; color: var(--text-2); line-height: 1.55; }
   .envs { display: grid; gap: 10px; }
   .envc { position: relative; display: grid; grid-template-columns: auto 1fr; gap: 2px 14px; align-items: center; padding: 14px 16px; border: 1.5px solid var(--line-strong); border-radius: 16px; background: var(--surface); cursor: pointer; transition: border-color var(--t-fast), background var(--t-fast), box-shadow var(--t-base) var(--ease), transform var(--t-base) var(--ease); }
   .envc:hover { border-color: color-mix(in srgb, var(--brand) 55%, var(--line-strong)); transform: translateY(-1px); box-shadow: var(--e2); }
