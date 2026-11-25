@@ -196,10 +196,11 @@
   .footer-col a { display: inline-block; color: var(--text); font-size: 15.5px; font-weight: 500; transition: color var(--t-fast), transform 0.35s var(--ease-spring); }
   .footer-col a:hover { color: var(--brand-ink); transform: translateX(4px); }
   .footer-mark { container-type: inline-size; margin-top: clamp(18px, 3vw, 40px); }
-  .wordmark { display: flex; justify-content: space-between; margin: 0; padding: 0 0 0.04em; font-family: var(--font-display); font-weight: 780; font-size: 27.5cqw; line-height: 0.86; letter-spacing: -0.05em; user-select: none; white-space: nowrap; overflow: hidden; }
-  .wordmark span { display: inline-block; padding: 0 0.07em 0.02em 0; margin-right: -0.07em; font-weight: var(--w, 760); background: linear-gradient(180deg, var(--text) 8%, color-mix(in srgb, var(--text) 8%, transparent) 96%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; transform: translateY(calc(var(--s, 0) * -0.14px)) scale(calc(1 + var(--s, 0) * 0.0009)); transform-origin: 50% 100%; transition: transform 0.25s var(--ease-out), font-weight 0.2s linear; }
+  /* The big wordmark: deep navy that fades out toward the bottom edge. It is plain, fixed text, so nothing moves on hover. */
+  .wordmark { margin: 0; padding: 0 0 0.03em; font-family: var(--font-display); font-weight: 800; font-size: 28cqw; line-height: 0.84; letter-spacing: -0.045em; text-align: center; user-select: none; white-space: nowrap; overflow: hidden; pointer-events: none; color: transparent; -webkit-text-fill-color: transparent; background: linear-gradient(180deg, var(--mark-top) 0%, var(--mark-mid) 48%, transparent 96%); -webkit-background-clip: text; background-clip: text; }
   .footer-legal { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 24px; margin-top: 16px; padding: 18px 6px 0; color: var(--text-3); font-size: 13.5px; }
   .footer-legal p { max-width: 80ch; }
+  @media (max-width: 640px) { .footer-legal { padding-right: 68px; } }
   .footer-keys { display: flex; align-items: center; gap: 8px; }
   @media (max-width: 900px) { .footer-lead { grid-template-columns: minmax(0, 1fr); } .footer-top { grid-template-columns: repeat(2, minmax(0, 1fr)); } .footer-keys { display: none; } }
   @media (max-width: 460px) { .footer-top { gap: 28px 20px; } }

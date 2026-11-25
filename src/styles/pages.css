@@ -349,7 +349,7 @@
     .js [data-reveal]:not(.in) { opacity: 1; translate: none; }
     .js [data-curtain]:not(.in) { clip-path: none; }
     .w > span { transform: none; }
-    .marquee__track, .stamp__ring { animation: none; }
+    .marquee__track, .stamp__ring, .aurora i { animation: none; }
     .skeleton, .card__media::before, .article__cover::before { animation: none; }
   }
 }
@@ -357,8 +357,6 @@
 /* ---------- Page transitions ---------- */
 /* Navigation reveals the next page with the same diagonal front the theme switch uses (top-right to bottom-left). */
 @view-transition { navigation: auto; }
-.site-header { view-transition-name: site-header; }
-::view-transition-group(site-header) { animation-duration: 0s; }
 ::view-transition-old(root) { animation: vt-old 0.7s var(--ease-io) both; z-index: 1; }
 ::view-transition-new(root) { animation: vt-wipe 0.7s var(--ease-io) both; z-index: 2; }
 @keyframes vt-wipe { from { clip-path: polygon(100% 0, 100% 0, 100% 0); } to { clip-path: polygon(100% 0, -100% 0, 100% 200%); } }
@@ -367,11 +365,11 @@
 ::view-transition-group(hero-cover) { animation-duration: 0.75s; animation-timing-function: var(--ease-io); z-index: 5; }
 ::view-transition-old(hero-cover), ::view-transition-new(hero-cover) { height: 100%; width: 100%; object-fit: contain; mix-blend-mode: normal; }
 @media (prefers-reduced-motion: reduce) { ::view-transition-old(root), ::view-transition-new(root), ::view-transition-group(hero-cover) { animation: none; } }
-/* Theme switch (scripts/theme.ts): a sheet with wavy edges sweeps across; colour transitions are off while the theme swaps behind it. */
-.theme-wipe { position: fixed; top: 0; bottom: 0; left: 0; z-index: 2147483000; display: flex; pointer-events: none; will-change: transform; }
-.theme-wipe b { flex: 1 1 auto; display: block; margin: 0 -1px; }
-.theme-wipe i { flex: none; display: block; background-repeat: no-repeat; background-position: 0 0; }
-html.theme-swap, html.theme-swap *, html.theme-swap *::before, html.theme-swap *::after { transition: none !important; }
+/* Theme switch: the new theme is revealed by a straight diagonal clip-path driven from scripts/theme.ts */
+html.theme-vt::view-transition-old(root), html.theme-vt::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+html.theme-vt::view-transition-new(root) { z-index: 2147483646; }
+html.theme-vt::view-transition-old(root) { z-index: 1; }
+html.theme-fade, html.theme-fade body, html.theme-fade * { transition: background-color 0.45s ease, color 0.45s ease, border-color 0.45s ease !important; }
 
 /* ---------- Print: reading-friendly, no chrome ---------- */
 @media print {

@@ -49,7 +49,7 @@ const letters = 'SKODE'.split('');
       </nav>
     </div>
    </div>
-    <div class="footer-mark"><div class="wordmark" aria-hidden="true" data-wordmark>{letters.map((c) => <span>{c === ' ' ? '\u00a0' : c}</span>)}</div></div>
+    <div class="footer-mark"><div class="wordmark" aria-hidden="true">{letters.join('')}</div></div>
     <div class="footer-legal">
       <p>© {year} {SITE.name}. {SITE.disclaimer}</p>
       <p class="footer-keys"><kbd class="kbd">/</kbd> search <kbd class="kbd">T</kbd> theme</p>

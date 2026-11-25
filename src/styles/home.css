@@ -66,9 +66,9 @@
   .feat__ctl .icon-btn { width: 48px; height: 48px; }
   .feat__ctl .icon-btn[disabled] { opacity: 0.4; pointer-events: none; }
   .flip { transform: scaleX(-1); }
-  .feat__track { display: flex; gap: clamp(16px, 2vw, 26px); overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; padding-block: 26px 52px; padding-inline: max(var(--gutter), calc((100% - var(--maxw)) / 2)); scroll-padding-inline: max(var(--gutter), calc((100% - var(--maxw)) / 2)); scrollbar-width: none; outline-offset: -6px; }
+  .feat__track { display: flex; align-items: stretch; gap: clamp(16px, 2vw, 26px); overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; padding-block: 26px 52px; padding-inline: max(var(--gutter), calc((100% - var(--maxw)) / 2)); scroll-padding-inline: max(var(--gutter), calc((100% - var(--maxw)) / 2)); scrollbar-width: none; outline-offset: -6px; }
   .feat__track::-webkit-scrollbar { display: none; }
-  .feat__track > .card { cursor: pointer; }
+  .feat__track > .card { cursor: pointer; height: auto; align-self: stretch; }
   .feat__dots { display: flex; justify-content: center; gap: 8px; margin-top: -26px; }
   .feat__dots i { display: block; width: 8px; height: 8px; border-radius: 8px; background: var(--line-strong); transition: width 0.6s var(--ease-spring), background-color 0.3s; }
   .feat__dots i[data-on] { width: 30px; background: var(--btn-grad); background-color: var(--brand); }

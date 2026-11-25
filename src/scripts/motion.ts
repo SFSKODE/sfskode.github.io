@@ -1,5 +1,5 @@
-// Site-wide motion layer: masked word reveals, labelled cursor, header progress, kinetic footer wordmark,
-// aurora (scroll + pointer light), card tilt, parallax, and shared-element page transitions. Everything is progressive enhancement and respects reduced motion.
+// Site-wide motion layer: masked word reveals, labelled cursor, header progress,
+// card tilt, parallax, and shared-element page transitions. Everything is progressive enhancement and respects reduced motion.
 import { frame, reduced, finePointer, clamp } from './util';
 
 const root = document.documentElement;
@@ -91,22 +91,6 @@ if (cur && finePointer() && !still) {
   }, { passive: true });
   root.addEventListener('pointerleave', () => { cur.removeAttribute('data-on'); label = ''; });
   document.addEventListener('pointerdown', () => cur.removeAttribute('data-on'));
-}
-
-/* ---------- Kinetic footer wordmark: weight follows the pointer ---------- */
-const mark = document.querySelector<HTMLElement>('[data-wordmark]');
-if (mark && finePointer() && !still) {
-  const letters = [...mark.querySelectorAll<HTMLElement>('span')];
-  const paint = frame((px: number, py: number) => {
-    for (const l of letters) {
-      const r = l.getBoundingClientRect();
-      const d = Math.hypot(px - (r.left + r.width / 2), (py - (r.top + r.height / 2)) * 0.6);
-      const k = clamp(1 - d / 360, 0, 1);
-      l.style.setProperty('--w', String(Math.round(660 + k * 190)));
-      l.style.setProperty('--s', String(Math.round(k * 100)));
-    }
-  });
-  mark.closest('.site-footer')?.addEventListener('pointermove', (e) => { const p = e as PointerEvent; if (p.pointerType === 'mouse') paint(p.clientX, p.clientY); }, { passive: true });
 }
 
 /* ---------- Tilt: [data-tilt] cards lean toward the pointer and get a lit edge (mouse only) ---------- */

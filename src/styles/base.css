@@ -65,22 +65,22 @@
     --lv-beginner: #12b58a; --lv-intermediate: #e8890c; --lv-advanced: #7b5cfa;
   }
 
-  /* ===== Light: clean white and soft grey, like a product page (default) ===== */
+  /* ===== Light: a clear blue sky with slow clouds (default) ===== */
   :root,
   :root[data-theme='light'] {
     color-scheme: light;
-    --bg: #fbfbfd;
+    --bg: #e8f3ff;
     --bg-2: #ffffff;
     --bg-tint: rgba(255, 255, 255, 0.5);
     --surface: #ffffff;
-    --surface-2: #f5f5f7;
-    --surface-3: #e8e8ed;
-    --text: #1d1d1f;
-    --text-2: #48484c;
-    --text-3: #6e6e73;
-    --line: rgba(0, 0, 0, 0.08);
-    --line-strong: rgba(0, 0, 0, 0.16);
-    --rule: rgba(0, 0, 0, 0.1);
+    --surface-2: #f0f7ff;
+    --surface-3: #dbe9f8;
+    --text: #0a1a33;
+    --text-2: #3a4f6e;
+    --text-3: #566a8a;
+    --line: rgba(10, 40, 90, 0.09);
+    --line-strong: rgba(10, 40, 90, 0.17);
+    --rule: rgba(10, 40, 90, 0.11);
 
     --glass: rgba(255, 255, 255, 0.6);
     --glass-2: rgba(255, 255, 255, 0.82);
@@ -107,7 +107,7 @@
     --e3: 0 2px 4px rgba(10, 40, 90, 0.04), 0 24px 60px -24px rgba(10, 40, 90, 0.34);
     --shadow-pop: 0 30px 80px -20px rgba(10, 40, 90, 0.45), 0 0 0 1px rgba(10, 40, 90, 0.08);
 
-    --header-bg: rgba(255, 255, 255, 0.66);
+    --header-bg: rgba(255, 255, 255, 0.72);
     --header-bg-2: rgba(255, 255, 255, 0.84);
     --overlay: rgba(10, 26, 51, 0.38);
 
@@ -119,7 +119,9 @@
 
     --lv-beginner: #0a8a62; --lv-intermediate: #a85800; --lv-advanced: #6a45e8;
 
-    --tint: 0 113 227; --tint-a: 0.08;   /* the one soft tint at the top of the page (r g b) */
+    --sky-1: #b2d9fb; --sky-2: #d6eaff; --sky-3: #eff7ff; --sun-a: 0.9;   /* the sky, top to bottom, and the glow of the sun */
+    --cloud: 255 255 255; --cloud-a: 1;
+    --mark-top: #12306b; --mark-mid: rgb(18 48 107 / 0.62);
     --light: rgba(255, 255, 255, 0.75);
     --grain: 0.045;
     --term-bg: #0e1319; --term-bar: #151b24; --term-text: #dbe5f3; --term-dim: #8b99ad;
@@ -179,7 +181,9 @@
 
     --lv-beginner: #34d399; --lv-intermediate: #fbbf24; --lv-advanced: #a78bfa;
 
-    --tint: 41 151 255; --tint-a: 0.16;
+    --sky-1: #0c1a36; --sky-2: #040810; --sky-3: #000000; --sun-a: 0;
+    --cloud: 120 160 240; --cloud-a: 0.1;
+    --mark-top: #1d3f86; --mark-mid: rgb(29 63 134 / 0.7);
     --light: rgba(160, 200, 255, 0.1);
     --grain: 0.07;
     --term-bg: #0e1218; --term-bar: #151b24; --term-text: #dbe5f3; --term-dim: #8b99ad;
@@ -240,6 +244,22 @@
   .section--tight { padding-block: var(--sec-s); }
   .section--tint { background: transparent; }
 
-  /* The backdrop: flat and quiet, like a product page. One very soft, static tint at the top of the page. Nothing moves. */
-  .aurora { position: fixed; inset: 0; z-index: 0; pointer-events: none; background: radial-gradient(ellipse 90% 55% at 50% -8%, rgb(var(--tint) / var(--tint-a)), transparent 72%); }
+  /* The backdrop: a soft blue sky with a few clouds drifting across it very slowly (about two to three minutes each way).
+     Only transforms animate and nothing is blurred, so it costs almost nothing. Reduced motion: the clouds just sit there. */
+  .aurora { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; contain: strict; background: radial-gradient(ellipse 75% 55% at 88% -8%, rgb(255 255 255 / var(--sun-a)), transparent 70%), linear-gradient(180deg, var(--sky-1) 0%, var(--sky-2) 50%, var(--sky-3) 100%); }
+  .aurora i { position: absolute; left: 0; top: var(--y); width: var(--w); height: calc(var(--w) * 0.34); opacity: calc(var(--o) * var(--cloud-a)); transform: translate3d(var(--sx), 0, 0); will-change: transform; animation: cloud var(--t) linear var(--d) infinite;
+    background:
+      radial-gradient(closest-side, rgb(var(--cloud) / 0.95), rgb(var(--cloud) / 0)) 0% 40% / 52% 62% no-repeat,
+      radial-gradient(closest-side, rgb(var(--cloud) / 0.95), rgb(var(--cloud) / 0)) 22% 0% / 44% 84% no-repeat,
+      radial-gradient(closest-side, rgb(var(--cloud) / 0.95), rgb(var(--cloud) / 0)) 46% 12% / 42% 80% no-repeat,
+      radial-gradient(closest-side, rgb(var(--cloud) / 0.9), rgb(var(--cloud) / 0)) 66% 36% / 36% 62% no-repeat,
+      radial-gradient(closest-side, rgb(var(--cloud) / 0.8), rgb(var(--cloud) / 0)) 18% 54% / 72% 46% no-repeat; }
+  .aurora i:nth-child(1) { --y: 7%;  --w: 46vw; --o: 0.95; --t: 150s; --d: -40s;  --sx: 20vw; }
+  .aurora i:nth-child(2) { --y: 21%; --w: 32vw; --o: 0.75; --t: 120s; --d: -92s;  --sx: 62vw; }
+  .aurora i:nth-child(3) { --y: 39%; --w: 54vw; --o: 0.6;  --t: 190s; --d: -20s;  --sx: 8vw; }
+  .aurora i:nth-child(4) { --y: 57%; --w: 38vw; --o: 0.55; --t: 165s; --d: -125s; --sx: 70vw; }
+  .aurora i:nth-child(5) { --y: 74%; --w: 46vw; --o: 0.5;  --t: 210s; --d: -60s;  --sx: 34vw; }
+  .aurora i:nth-child(6) { --y: 13%; --w: 24vw; --o: 0.6;  --t: 105s; --d: -14s;  --sx: 84vw; }
+  @keyframes cloud { from { transform: translate3d(-58vw, 0, 0); } to { transform: translate3d(112vw, 0, 0); } }
+  @media (max-width: 700px) { .aurora i { width: calc(var(--w) * 1.8); } .aurora i:nth-child(6) { display: none; } }
 }
