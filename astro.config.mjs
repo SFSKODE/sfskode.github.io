@@ -4,8 +4,8 @@ import { satteri } from '@astrojs/markdown-satteri';
 import { handleSalesforceApi } from './scripts/sf-api.mjs';
 import { enhanceMarkdown, codeBlockTransformer } from './src/plugins/enhance-markdown.mjs';
 
-// Change SITE_URL when you buy your domain (or set it as an environment variable).
-const site = process.env.SITE_URL || 'https://example.com';
+// Change this (or set SITE_URL) when you buy your own domain. It feeds the sitemap, canonical links and the RSS feed.
+const site = process.env.SITE_URL || 'https://sfskode.github.io';
 
 // Pages that should not appear in the sitemap (exact paths, not substring matches).
 const HIDDEN = new Set(['/maintenance/', '/404/', '/search/']);
