@@ -55,7 +55,7 @@ Some SOQL features, such as certain relationship constructs, are not supported i
 ## Basic example
 
 ```bash
-BASE="$INSTANCE/services/data/v67.0"
+BASE="$INSTANCE/services/data/v68.0"
 H="Authorization: Bearer $TOKEN"
 
 # Create
@@ -80,7 +80,7 @@ That exports everything changed after the date you typed. The advanced version w
 ```javascript
 const instance = process.env.INSTANCE;
 const token = process.env.TOKEN;
-const base = `${instance}/services/data/v67.0/jobs`;
+const base = `${instance}/services/data/v68.0/jobs`;
 const auth = { Authorization: `Bearer ${token}` };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 

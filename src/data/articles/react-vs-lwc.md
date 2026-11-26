@@ -161,7 +161,7 @@ createServer(async (req, res) => {
     return;
   }
   const soql = 'SELECT Id, Name, Industry FROM Account ORDER BY Name LIMIT 100';
-  const sf = await fetch(`${instance}/services/data/v67.0/query?q=${encodeURIComponent(soql)}`, {
+  const sf = await fetch(`${instance}/services/data/v68.0/query?q=${encodeURIComponent(soql)}`, {
     headers: { Authorization: `Bearer ${token}` }
   });
   if (!sf.ok) {

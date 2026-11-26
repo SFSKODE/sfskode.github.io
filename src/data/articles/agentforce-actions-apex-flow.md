@@ -319,7 +319,7 @@ private class AgentActionsTest {
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <Flow xmlns="http://soap.sforce.com/2006/04/metadata">
-    <apiVersion>67.0</apiVersion>
+    <apiVersion>68.0</apiVersion>
     <label>Find Store With Stock</label>
     <description>Finds one store that has the requested item. Used as an agent action.</description>
     <processType>AutoLaunchedFlow</processType>

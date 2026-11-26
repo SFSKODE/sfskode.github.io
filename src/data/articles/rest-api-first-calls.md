@@ -9,7 +9,7 @@ cover: /images/covers/rest-api-first-calls.jpg
 sources:
   - title: "REST API Developer Guide"
     url: "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/"
-  - title: "The Salesforce Developers Guide to the Summer '26 Release (API 67.0)"
+  - title: "The Salesforce Developer's Guide to the Winter '27 Release (API 68.0)"
     url: "https://developer.salesforce.com/blogs/2026/06/the-salesforce-developers-guide-to-the-summer-26-release"
 ---
 
@@ -39,9 +39,9 @@ Pioneer Books (a fictional online bookstore) keeps its customers in its own webs
 
 Every REST URL has the same shape: your domain, then `/services/data/`, then an **API version**, then a resource.
 
-`https://<MyDomain>.my.salesforce.com/services/data/v67.0/sobjects/Account`
+`https://<MyDomain>.my.salesforce.com/services/data/v68.0/sobjects/Account`
 
-`v67.0` is the version that shipped with Summer '26. You can list the versions your org supports by opening `/services/data/`. Pin the version in your integration so a release never changes behaviour unexpectedly, and move it deliberately after testing.
+`v68.0` is the version that shipped with Winter '27 (October 2026). Summer '26 was v67.0, and Spring '27 will be v69.0. You can list the versions your org supports by opening `/services/data/`. Pin the version in your integration so a release never changes behaviour unexpectedly, and move it deliberately after testing.
 
 Each call carries an `Authorization: Bearer <token>` header. The HTTP method says what you want: `GET` reads, `POST` creates, `PATCH` updates, `DELETE` removes. Salesforce replies with a status code, and for creates a JSON body containing the new id.
 
@@ -51,15 +51,17 @@ Set two variables, then try each operation in order.
 
 ```bash
 export INSTANCE="https://pioneer-dev.my.salesforce.com"
-export BASE="$INSTANCE/services/data/v67.0"
+export BASE="$INSTANCE/services/data/v68.0"
 export TOKEN="00D...your_access_token"
 ```
 
-You can print a token for an authorised org with the Salesforce CLI while learning:
+You can print a token for an authorised org with the Salesforce CLI while learning. Since Winter '27, `sf org display` no longer prints access tokens (they appear as `[REDACTED]`), so use the dedicated command:
 
 ```bash
-sf org display --target-org myorg --verbose
+sf org auth show-access-token --target-org myorg
 ```
+
+Check `sf org auth show-access-token --help` for the flags in your CLI version.
 
 Create, read, update and delete an Account:
 
@@ -128,7 +130,7 @@ export async function parseError(res) {
 import { parseError } from './errors.mjs';
 
 export class RestClient {
-  constructor({ instance, token, version = 'v67.0', fetchImpl = fetch }) {
+  constructor({ instance, token, version = 'v68.0', fetchImpl = fetch }) {
     this.instance = instance;
     this.token = token;
     this.version = version;

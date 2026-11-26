@@ -5,6 +5,7 @@ category: salesforce-administration
 tags: [Flow, Automation, Apex, Intermediate]
 publishedAt: 2026-11-16
 updatedAt: 2026-11-16
+cover: /images/covers/flow-types-screen-scheduled-autolaunched.jpg
 sources:
   - title: "Salesforce Help: Flow Builder"
     url: "https://help.salesforce.com/s/articleView?id=sf.flow.htm"
@@ -28,7 +29,7 @@ Juniper Consulting wants three automations. Sales reps need a guided **screen fl
 2. Create the fields used below: a checkbox `Needs_Review__c` on Opportunity, and optionally `Renewal_Discount__c` (Percent) on Opportunity.
 3. Make sure the people who run flows have the **Run Flows** permission, or the flow is set to run in a suitable context. A screen flow also needs the user to see the objects and fields it touches, unless it runs in system context.
 4. For scheduled flows, remember that they run as the **Automated Process** user or the configured user, so check sharing and field access for that context. Also confirm the number of scheduled runs your edition allows.
-5. For Apex that calls a flow, create a DX project, set `"sourceApiVersion": "67.0"` and deploy to a sandbox: `sf project deploy start --source-dir force-app --target-org dev`.
+5. For Apex that calls a flow, create a DX project, set `"sourceApiVersion": "68.0"` and deploy to a sandbox: `sf project deploy start --source-dir force-app --target-org dev`.
 6. Plan versioning. A flow has versions; only one is active. Test a new version as **Draft** before activating it.
 
 ### In the external system
@@ -60,7 +61,7 @@ An autolaunched flow with two inputs and one output. Retrieve this from an org o
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <Flow xmlns="http://soap.sforce.com/2006/04/metadata">
-    <apiVersion>67.0</apiVersion>
+    <apiVersion>68.0</apiVersion>
     <label>Renewal Discount</label>
     <description>Calculates the renewal discount percent from tenure and annual spend.</description>
     <processType>AutoLaunchedFlow</processType>
@@ -232,7 +233,7 @@ private class RenewalDiscountServiceTest {
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <Flow xmlns="http://soap.sforce.com/2006/04/metadata">
-    <apiVersion>67.0</apiVersion>
+    <apiVersion>68.0</apiVersion>
     <label>Flag Overdue Opportunities</label>
     <description>Nightly: marks open opportunities whose close date has passed.</description>
     <processType>AutoLaunchedFlow</processType>

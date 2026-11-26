@@ -5,6 +5,7 @@ category: salesforce-administration
 tags: [Data Model, Objects, Relationships, Beginner, Intermediate]
 publishedAt: 2026-11-16
 updatedAt: 2026-11-16
+cover: /images/covers/salesforce-data-model-and-relationships.jpg
 sources:
   - title: "Object Reference for Salesforce"
     url: "https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/"
@@ -24,7 +25,7 @@ Juniper Consulting runs client projects. A **Project** has many **Tasks**, and e
 
 1. Use a Developer Edition org or a sandbox. Do not build experiments in production.
 2. Install the Salesforce CLI and VS Code with the Salesforce extensions; connect: `sf org login web --alias dev`.
-3. Create a DX project: `sf project generate --name project-model`, and set `"sourceApiVersion": "67.0"`.
+3. Create a DX project: `sf project generate --name project-model`, and set `"sourceApiVersion": "68.0"`.
 4. Decide naming up front. Use singular labels (Project, Task), API names ending in `__c`, and a consistent prefix for fields.
 5. Know which tool to use: **Setup, Object Manager** is quickest for exploring; **metadata in source control** (below) is how teams keep environments identical.
 6. Plan security with the model: objects need permission set access, and a **master-detail** child inherits sharing from its parent.

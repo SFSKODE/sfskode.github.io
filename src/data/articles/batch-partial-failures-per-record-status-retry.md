@@ -453,7 +453,7 @@ The Apex is syntax-checked but not compiled here. Run it in a scratch org and ad
 For an external system pushing into Salesforce, use sObject Collections with `allOrNone` false and an external id upsert, then read the per-record results:
 
 ```bash
-curl -s -X PATCH "$INSTANCE/services/data/v62.0/composite/sobjects/Contact/Core_Id__c" \
+curl -s -X PATCH "$INSTANCE/services/data/v68.0/composite/sobjects/Contact/Core_Id__c" \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{"allOrNone": false, "records": [
         {"attributes": {"type": "Contact"}, "Core_Id__c": "C-1", "LastName": "Ng"},

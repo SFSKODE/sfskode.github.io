@@ -149,7 +149,7 @@ public with sharing class LineCalculator {
 }
 ```
 
-Run it in the Developer Console (Debug, Open Execute Anonymous Window):
+Run it as anonymous Apex in the Web Console (command palette: "SFDX: Create Anonymous Apex Script", then "SFDX: Execute Anonymous Apex"), with `sf apex run`, or in the Developer Console (Debug, Open Execute Anonymous Window; hidden by default since Winter '27 and re-enabled in the Web Console settings):
 
 ```apex
 // Anonymous Apex
@@ -868,7 +868,7 @@ The `sf apex generate class` line shows how a meta file is created. For the othe
 4. **Queries.** The service runs exactly two SOQL queries however many lines the quote has: one on `PricebookEntry`, one on `Account`. The synchronous limit is 100 queries and 50,000 returned rows per transaction. The naive version would use one query per line and fail at line 101.
 5. **Rules.** The loop calls each `PricingRule` through the interface. This is plain CPU work. The synchronous CPU limit is 10 seconds; 200 lines with two rules use a few milliseconds.
 6. **Security.** `WITH USER_MODE` makes the platform check Read on `PricebookEntry`, field-level security on every field in the query, and record sharing on `Account`. A user without access gets a `System.QueryException` that names the problem.
-7. **Return.** The result is serialized to JSON, and the heap (6 MB synchronous) is released with the transaction. Static variables disappear too.
+7. **Return.** The result is serialized to JSON, and the heap (10 MB synchronous since Winter '27) is released with the transaction. Static variables disappear too.
 
 In a debug log (Setup, Debug Logs, or `sf apex tail log`) look for these events:
 

@@ -5,6 +5,7 @@ category: salesforce-development
 tags: [LWC, Forms, UI API, Intermediate]
 publishedAt: 2026-11-16
 updatedAt: 2026-11-16
+cover: /images/covers/lwc-forms-and-ui-api.jpg
 sources:
   - title: "Lightning Web Components Developer Guide"
     url: "https://developer.salesforce.com/docs/platform/lwc/guide/"
@@ -23,7 +24,7 @@ Juniper Consulting's service team creates Cases from a custom "Quick Case" panel
 ### In Salesforce
 
 1. Use a Developer Edition org or sandbox with the Salesforce CLI and VS Code Salesforce extensions; connect with `sf org login web --alias dev`.
-2. Create a Salesforce DX project and set `"sourceApiVersion": "67.0"`.
+2. Create a Salesforce DX project and set `"sourceApiVersion": "68.0"`.
 3. In **Object Manager, Case**, confirm the Priority picklist has values (Low, Medium, High) and that **Subject** and **Description** are visible to your profile. Check field-level security: the form shows only fields the user can see.
 4. Optionally create a **validation rule** on Case: `AND(ISPICKVAL(Priority,"High"), ISBLANK(Description))` with the message "High priority cases need a description." Client checks improve the experience, but **server rules remain the real enforcement**.
 5. Give your users a permission set with Create on Case and Read on Account.
@@ -276,7 +277,7 @@ export default class QuickCase extends LightningElement {
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
-    <apiVersion>67.0</apiVersion>
+    <apiVersion>68.0</apiVersion>
     <isExposed>true</isExposed>
     <targets>
         <target>lightning__RecordPage</target>

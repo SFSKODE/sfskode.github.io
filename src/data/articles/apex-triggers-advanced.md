@@ -800,7 +800,7 @@ Limits used by the synchronous transaction: 1 or 2 SOQL queries (plus any your f
 ## Test it and verify
 
 1. Run the test class (command above). Expect all tests to pass.
-2. Create Account records with and without `Billing_Email__c`. In Developer Console, Debug, Open Execute Anonymous Apex, run:
+2. Create Account records with and without `Billing_Email__c`. As anonymous Apex (Web Console, `sf apex run`, or Developer Console, Debug, Open Execute Anonymous Apex, which is hidden by default since Winter '27), run:
 
    ```apex
    // Anonymous Apex

@@ -66,7 +66,7 @@ Ingest jobs draw from the shared allocation of 15,000 batches per 24 hours. If a
 The whole lifecycle in curl:
 
 ```bash
-BASE="$INSTANCE/services/data/v67.0"
+BASE="$INSTANCE/services/data/v68.0"
 H="Authorization: Bearer $TOKEN"
 
 # 1. Create the job (note the id in the reply)
@@ -146,7 +146,7 @@ export function failedRowsToRetryCsv(failedCsv) {
 ```javascript
 const instance = process.env.INSTANCE;
 const token = process.env.TOKEN;
-const base = `${instance}/services/data/v67.0/jobs/ingest`;
+const base = `${instance}/services/data/v68.0/jobs/ingest`;
 const json = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 

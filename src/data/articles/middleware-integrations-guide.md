@@ -161,7 +161,7 @@ export async function processOrder(event, systems) {
 ```javascript
 export function makeSalesforceWriter(instance, token) {
   return async function update(opportunityId, fields) {
-    const res = await fetch(`${instance}/services/data/v67.0/sobjects/Opportunity/${opportunityId}`, {
+    const res = await fetch(`${instance}/services/data/v68.0/sobjects/Opportunity/${opportunityId}`, {
       method: 'PATCH',
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
       body: JSON.stringify(fields)

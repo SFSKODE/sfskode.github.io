@@ -64,13 +64,13 @@ Choose by the shape of the work:
   "compositeRequest": [
     {
       "method": "POST",
-      "url": "/services/data/v67.0/sobjects/Account",
+      "url": "/services/data/v68.0/sobjects/Account",
       "referenceId": "newAcc",
       "body": { "Name": "Acme Ltd" }
     },
     {
       "method": "POST",
-      "url": "/services/data/v67.0/sobjects/Contact",
+      "url": "/services/data/v68.0/sobjects/Contact",
       "referenceId": "newCon",
       "body": { "LastName": "Rao", "AccountId": "@{newAcc.id}" }
     }
@@ -78,7 +78,7 @@ Choose by the shape of the work:
 }
 ```
 
-Send it with `POST /services/data/v67.0/composite`. `@{newAcc.id}` takes the id from the first response. With `allOrNone` true, any failure rolls back the whole request. With false, successful steps stay.
+Send it with `POST /services/data/v68.0/composite`. `@{newAcc.id}` takes the id from the first response. With `allOrNone` true, any failure rolls back the whole request. With false, successful steps stay.
 
 The other three shapes, for comparison:
 
@@ -86,8 +86,8 @@ The other three shapes, for comparison:
 {
   "haltOnError": false,
   "batchRequests": [
-    { "method": "GET", "url": "v67.0/sobjects/Account/001Hn00001AbCdEQAT" },
-    { "method": "GET", "url": "v67.0/query?q=SELECT+Id+FROM+Contact+LIMIT+5" }
+    { "method": "GET", "url": "v68.0/sobjects/Account/001Hn00001AbCdEQAT" },
+    { "method": "GET", "url": "v68.0/query?q=SELECT+Id+FROM+Contact+LIMIT+5" }
   ]
 }
 ```
@@ -123,7 +123,7 @@ That is `/composite/tree/Account`: a parent and children created together, all o
 **src/composite.mjs**
 
 ```javascript
-const V = 'v67.0';
+const V = 'v68.0';
 const base = () => `${process.env.INSTANCE}/services/data/${V}`;
 const headers = () => ({
   Authorization: `Bearer ${process.env.TOKEN}`,

@@ -5,6 +5,7 @@ category: web-and-devops
 tags: [Salesforce DX, Scratch Orgs, Packaging, CI/CD, Intermediate]
 publishedAt: 2026-11-16
 updatedAt: 2026-11-16
+cover: /images/covers/salesforce-dx-scratch-orgs-and-packages.jpg
 sources:
   - title: "Salesforce DX Developer Guide"
     url: "https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/"
@@ -120,7 +121,7 @@ The files below make everything repeatable. Create them in the project root.
   "name": "juniper",
   "namespace": "",
   "sfdcLoginUrl": "https://login.salesforce.com",
-  "sourceApiVersion": "67.0",
+  "sourceApiVersion": "68.0",
   "packageAliases": {}
 }
 ```
@@ -203,7 +204,7 @@ export function checkProject(project) {
     problems.push(`Exactly one package directory must be default (found ${defaults.length}).`);
   }
   if (!API_VERSION.test(String(project.sourceApiVersion ?? ''))) {
-    problems.push('sourceApiVersion should look like "67.0".');
+    problems.push('sourceApiVersion should look like "68.0".');
   }
 
   const names = new Set();
@@ -275,7 +276,7 @@ const good = {
     { path: 'app', package: 'Juniper-App', versionNumber: '1.0.0.NEXT', default: true,
       dependencies: [{ package: 'Juniper-Core', versionNumber: '1.2.0.LATEST' }] }
   ],
-  sourceApiVersion: '67.0',
+  sourceApiVersion: '68.0',
   packageAliases: { 'Juniper-Core': '0Ho000000000001AAA', 'Juniper-App': '0Ho000000000002AAA' }
 };
 

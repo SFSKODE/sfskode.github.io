@@ -281,6 +281,23 @@ This is the reason to choose Agent Script. In natural-language-only subagents, y
 5. Preview a long conversation and confirm the escalation happens after the turn limit.
 6. Run a test conversation for every branch, including the transition path, and keep them in Git with the script.
 
+## Winter '27 additions to Agent Script
+
+The Winter '27 release notes list several additions. Check the current Agent Script reference for exact syntax before you use them, because this article's examples were written against the earlier language.
+
+- **Expression functions:** `lower()`, `upper()`, `to_json()`, `from_json()` and `json_path(obj, path, default)` for working with text and JSON values.
+- **Control flow:** `else if` chains are supported; nested `if` and `elif` are not.
+- **System variables:** `@system_variables.current_connection` and `@system_variables.current_modality` tell the agent which channel it is running in.
+- **Top-level `escalate`:** a deterministic human handoff that does not depend on model judgement.
+- **Per-connection formatting:** `when @connection.<name>` blocks with `render`, including the built-in `@response_formats.json`, so one agent can answer differently in chat, voice or a custom client.
+- **File uploads** for Service and Employee agents, with a `file_upload` mode of `auto`, `managed`, `disabled` or `error`. In managed mode, files are placed in `@system_variables.uploaded_files`.
+- **A `runtime` block** for per-agent settings such as streaming and citations.
+- **Multi-Agent Orchestration (generally available):** `connected_subagent` with `delegate_escalation`.
+- **Metadata types** `AiAgentDefinition` and `AiAgentDefinitionVersion` at API 68.0 and later. Retrieve with `--root-type-with-dependencies`, and keep the previous types for deployments from a sandbox to a production org that has not upgraded yet.
+- **Tooling:** agents built with Agent Script Builder can be exposed as MCP tools from a custom Salesforce MCP server, and agent versions can be compared and merged in Agentforce Builder.
+
+None of these change the core idea of this article: put rules that must always hold into deterministic logic, and leave the conversation to the model.
+
 ## Common mistakes and fixes
 
 - **Putting every rule in script.** Use natural-language subagents first and add script where you need a guarantee.

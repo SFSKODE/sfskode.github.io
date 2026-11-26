@@ -144,7 +144,7 @@ trigger LeadTrigger on Lead (before insert) {
 }
 ```
 
-Try it in the Developer Console (Debug, Open Execute Anonymous Window):
+Try it as anonymous Apex in the Web Console, with `sf apex run`, or in the Developer Console (Debug, Open Execute Anonymous Window; hidden by default since Winter '27):
 
 ```apex
 // Anonymous Apex

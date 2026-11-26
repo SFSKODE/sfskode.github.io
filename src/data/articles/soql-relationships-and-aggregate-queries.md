@@ -5,6 +5,7 @@ category: salesforce-development
 tags: [SOQL, Apex, Data Model, Intermediate]
 publishedAt: 2026-11-16
 updatedAt: 2026-11-16
+cover: /images/covers/soql-relationships-and-aggregate-queries.jpg
 sources:
   - title: "SOQL and SOSL Reference"
     url: "https://developer.salesforce.com/docs/atlas.en-us.soql_sosl.meta/soql_sosl/"
@@ -24,7 +25,7 @@ Juniper Consulting's sales director wants a weekly report: for every account in 
 
 1. Use a **Developer Edition org** or a sandbox. Never experiment in production.
 2. Install the Salesforce CLI and Visual Studio Code with the Salesforce Extension Pack, then connect: `sf org login web --alias dev --set-default`.
-3. Create a project: `sf project generate --name pipeline-report`, and set `"sourceApiVersion": "67.0"` in `sfdx-project.json`.
+3. Create a project: `sf project generate --name pipeline-report`, and set `"sourceApiVersion": "68.0"` in `sfdx-project.json`.
 4. Make sure your user can read Account, Contact and Opportunity. The System Administrator profile can; for a normal user add a permission set with those object permissions.
 5. Create test data. Open **Developer Console, Debug, Open Execute Anonymous Window** (or run with `sf apex run`) and run this script, which also shows the code style used later:
 

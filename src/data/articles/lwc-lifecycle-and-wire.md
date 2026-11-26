@@ -273,7 +273,7 @@ export default class AccountHealthCard extends LightningElement {
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
-    <apiVersion>67.0</apiVersion>
+    <apiVersion>68.0</apiVersion>
     <isExposed>true</isExposed>
     <masterLabel>Account Health Card</masterLabel>
     <targets>

@@ -5,6 +5,7 @@ category: salesforce-development
 tags: [Data Cloud, Data Model, Identity Resolution, Intermediate]
 publishedAt: 2026-11-16
 updatedAt: 2026-11-16
+cover: /images/covers/data-cloud-fundamentals.jpg
 sources:
   - title: "Salesforce Help: Data Cloud"
     url: "https://help.salesforce.com/s/articleView?id=sf.c360_a_data_cloud.htm"
@@ -14,6 +15,8 @@ sources:
 
 Customer data usually lives in many places: the CRM, a web store, a support tool, a marketing platform. Data Cloud brings it into one platform, links the records that belong to the same person, and makes the result usable for segments, analytics, automation and AI agents. This article explains the building blocks in the order you meet them, and includes a small program that behaves like identity resolution so you can see why records link.
 
+> **Naming note:** Salesforce's current documentation and release notes increasingly call this product **Data 360**. This article keeps the name Data Cloud because it is still widely used and the object suffixes shown below (such as `__dlm` and `__dll`) are unchanged. Treat the two names as the same product family and check the current help for naming in your org.
+>
 > Data Cloud screens, object names and API paths change between releases and depend on your licence. Use Setup and the current help for the exact steps. The identity model, tests and SQL below are written so you can understand and run the logic yourself, but the SQL needs your own object and field names.
 
 ## The business scenario

@@ -17,7 +17,7 @@ Salesforce ships three major releases a year, named Winter, Spring and Summer. E
 
 > Exact dates differ per release and per instance. Look up your instance on Salesforce Trust (under Maintenance) for your org's dates and read the official release notes for each release.
 
-For example, Summer '26 shipped API version 67.0 and brought changes that affect Apex security (user mode by default and `with sharing` as the default for classes compiled at 67.0, per the developer guide). Confirm details like these in the current release notes, because they can change.
+For example, Summer '26 shipped API version 67.0 (Winter '27, in October 2026, shipped 68.0) and brought changes that affect Apex security (user mode by default and `with sharing` as the default for classes compiled at 67.0, per the developer guide). Confirm details like these in the current release notes, because they can change.
 
 ## The business scenario
 

@@ -5,6 +5,7 @@ category: salesforce-administration
 tags: [Reports, Dashboards, Analytics, Beginner]
 publishedAt: 2026-11-16
 updatedAt: 2026-11-16
+cover: /images/covers/reports-and-dashboards-guide.jpg
 sources:
   - title: "Salesforce Help: Reports and Dashboards"
     url: "https://help.salesforce.com/s/articleView?id=sf.analytics_overview.htm"
@@ -29,7 +30,7 @@ Juniper Consulting's sales director asks: "What is our open pipeline this quarte
 3. **Create folders.** In Reports and Dashboards, create a folder "Sales Pipeline" and share it with the roles that need it (Viewer or Editor). Everything below lives in it.
 4. **Choose or create a report type.** The standard "Opportunities" type is enough here. A custom report type is needed when you must report across a custom relationship (for example Projects with Tasks).
 5. **Dashboard running user.** A dashboard shows data as a **running user** (a fixed person, or the viewer through "Let dashboard viewers choose whom they view the dashboard as" where enabled). Create a dedicated, correctly scoped user for scheduled dashboards.
-6. For the Apex part, create a DX project and set `"sourceApiVersion": "67.0"`.
+6. For the Apex part, create a DX project and set `"sourceApiVersion": "68.0"`.
 
 ### In the external system
 

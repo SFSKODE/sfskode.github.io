@@ -132,7 +132,7 @@ And `sfdx-project.json` tells the CLI where your source lives and which API vers
   "name": "salesforce-learning",
   "namespace": "",
   "sfdcLoginUrl": "https://login.salesforce.com",
-  "sourceApiVersion": "67.0"
+  "sourceApiVersion": "68.0"
 }
 ```
 

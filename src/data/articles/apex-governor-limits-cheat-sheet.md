@@ -55,7 +55,7 @@ Limits are counted **per transaction**. A transaction starts at an entry point (
 | Cumulative callout timeout | 120 seconds | 120 seconds |
 | `System.enqueueJob` calls | 50 | 1 |
 | `sendEmail` invocations | 10 | 10 |
-| Heap size | 6 MB | 12 MB |
+| Heap size | 10 MB | 25 MB |
 | CPU time | 10,000 ms | 60,000 ms |
 
 Other facts to remember:
@@ -65,7 +65,8 @@ Other facts to remember:
 - Each `execute` of a Batch Apex job and each Queueable job gets **its own** fresh set of limits.
 - `Test.startTest()` and `Test.stopTest()` give the code between them a fresh set of limits.
 - Some limits are not per transaction at all (for example daily asynchronous Apex executions and API request totals). They are measured over 24 hours. Check the limits page for those.
-- Summer '26 release notes describe elastic async limits as a beta for Queueable and `@future`, and API 67.0 changes some defaults for Apex security. Neither changes the per-transaction numbers above; read the current release notes before you plan around them.
+- Heap limits were raised in Winter '27 (API 68.0): synchronous from 6 MB to 10 MB and asynchronous from 12 MB to 25 MB. The change is automatic, and sandboxes have an option to keep the Summer '26 limit until production upgrades.
+- Release notes also describe elastic async limits as a beta for Queueable and `@future`, extended to Batch Apex in Winter '27, and API 67.0 changed some defaults for Apex security. Neither changes the standard per-transaction numbers above; read the current release notes before you plan around them.
 
 ### The `Limits` class
 
@@ -82,7 +83,7 @@ You can read usage at run time. The pattern is always `Limits.getX()` (used so f
 
 ## Basic example
 
-The classic mistake, and its fix. Run both in the Developer Console's anonymous Apex window and compare.
+The classic mistake, and its fix. Run both as anonymous Apex (Web Console, `sf apex run`, or the Developer Console, which is hidden by default since Winter '27) and compare.
 
 **Bad: one query per record**
 

@@ -207,7 +207,7 @@ private class PatternsTest {
 **website/placeOrder.mjs** (remote call-in from the website, using one Composite request)
 
 ```javascript
-const base = `${process.env.INSTANCE}/services/data/v67.0`;
+const base = `${process.env.INSTANCE}/services/data/v68.0`;
 const headers = {
   Authorization: `Bearer ${process.env.TOKEN}`,
   'Content-Type': 'application/json'
@@ -219,13 +219,13 @@ export async function placeOrder(customerName, customerId) {
     compositeRequest: [
       {
         method: 'PATCH',
-        url: `/services/data/v67.0/sobjects/Account/Website_Customer_Id__c/${encodeURIComponent(customerId)}`,
+        url: `/services/data/v68.0/sobjects/Account/Website_Customer_Id__c/${encodeURIComponent(customerId)}`,
         referenceId: 'acct',
         body: { Name: customerName }
       },
       {
         method: 'POST',
-        url: '/services/data/v67.0/sobjects/Order',
+        url: '/services/data/v68.0/sobjects/Order',
         referenceId: 'ord',
         body: { AccountId: '@{acct.id}', Status: 'Draft', EffectiveDate: new Date().toISOString().slice(0, 10) }
       }

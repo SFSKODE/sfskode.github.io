@@ -718,7 +718,7 @@ public with sharing class AsyncJobMonitor {
 }
 ```
 
-The same checks work as plain SOQL in Developer Console or `sf data query`:
+The same checks work as plain SOQL in the Web Console, Developer Console or `sf data query`:
 
 ```soql
 SELECT Id, ApexClass.Name, JobType, Status, NumberOfErrors, ExtendedStatus,

@@ -5,6 +5,7 @@ category: salesforce-development
 tags: [SOQL, SOSL, Apex, Schema, Advanced]
 publishedAt: 2026-11-16
 updatedAt: 2026-11-16
+cover: /images/covers/dynamic-soql-sosl-and-schema-describe.jpg
 sources:
   - title: "SOQL and SOSL Reference"
     url: "https://developer.salesforce.com/docs/atlas.en-us.soql_sosl.meta/soql_sosl/"
@@ -23,7 +24,7 @@ Juniper Consulting's support managers want one reusable "find records" component
 ### In Salesforce
 
 1. Use a **Developer Edition org** or sandbox with the Salesforce CLI and VS Code connected (`sf org login web --alias dev`).
-2. Set `"sourceApiVersion": "67.0"` in `sfdx-project.json`.
+2. Set `"sourceApiVersion": "68.0"` in `sfdx-project.json`.
 3. Decide which objects the tool may search. In the code below that is an **allow-list** (`Account`, `Contact`, `Case`), because "any object" is a data exposure risk.
 4. Give users a permission set that grants read access to those objects and fields. The service runs in **user mode**, so what each user sees depends on their permissions.
 5. Create sample data with Execute Anonymous:

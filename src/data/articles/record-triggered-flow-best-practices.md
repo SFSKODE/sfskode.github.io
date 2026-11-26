@@ -65,7 +65,7 @@ A before-save Flow that stamps a field is the simplest useful case. In Flow Buil
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <Flow xmlns="http://soap.sforce.com/2006/04/metadata">
-    <apiVersion>67.0</apiVersion>
+    <apiVersion>68.0</apiVersion>
     <label>Opp Stamp Stage Change</label>
     <description>Before save: records when the stage last changed.</description>
     <processType>AutoLaunchedFlow</processType>
@@ -110,7 +110,7 @@ A before-save Flow that stamps a field is the simplest useful case. In Flow Buil
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <Flow xmlns="http://soap.sforce.com/2006/04/metadata">
-    <apiVersion>67.0</apiVersion>
+    <apiVersion>68.0</apiVersion>
     <label>Opp Negotiation Follow Up</label>
     <description>After save: creates one follow-up Task when a deal enters Negotiation. Faults are logged.</description>
     <processType>AutoLaunchedFlow</processType>

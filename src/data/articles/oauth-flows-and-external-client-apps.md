@@ -76,7 +76,7 @@ The response is JSON.
 Use it like this:
 
 ```bash
-curl -s "https://yourcompany.my.salesforce.com/services/data/v67.0/query?q=SELECT+Id+FROM+Account+LIMIT+1" \
+curl -s "https://yourcompany.my.salesforce.com/services/data/v68.0/query?q=SELECT+Id+FROM+Account+LIMIT+1" \
   -H "Authorization: Bearer $ACCESS_TOKEN"
 ```
 
@@ -109,7 +109,7 @@ export function loadConfig(env = process.env) {
     clientSecret: env.SF_CLIENT_SECRET,
     privateKey: env.SF_PRIVATE_KEY,
     username: env.SF_USERNAME,
-    apiVersion: env.SF_API_VERSION || 'v67.0',
+    apiVersion: env.SF_API_VERSION || 'v68.0',
     flow
   };
 }
@@ -272,7 +272,7 @@ import { loadConfig } from '../src/config.mjs';
 
 const config = {
   loginUrl: 'https://login.test', clientId: 'cid', clientSecret: 'sec',
-  apiVersion: 'v67.0', flow: 'client_credentials'
+  apiVersion: 'v68.0', flow: 'client_credentials'
 };
 
 function reply(status, body) {

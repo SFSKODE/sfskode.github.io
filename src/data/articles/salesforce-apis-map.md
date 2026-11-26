@@ -63,7 +63,7 @@ Two more rules help. If the outside system needs to be told when something chang
 A REST query is the first thing to try.
 
 ```bash
-curl -s -G "$INSTANCE/services/data/v67.0/query" \
+curl -s -G "$INSTANCE/services/data/v68.0/query" \
   --data-urlencode "q=SELECT Id, Name FROM Account ORDER BY CreatedDate DESC LIMIT 3" \
   -H "Authorization: Bearer $TOKEN"
 ```
@@ -79,7 +79,7 @@ The Node scripts below each call a different API and share a small helper. You c
 ```javascript
 const instance = process.env.INSTANCE;
 const token = process.env.TOKEN;
-export const version = 'v67.0';
+export const version = 'v68.0';
 
 export async function sf(path, init = {}) {
   const res = await fetch(`${instance}${path}`, {
@@ -282,7 +282,7 @@ Composite sends several sub-requests in one HTTP call. With `allOrNone` set, if 
 
 Bulk API 2.0 is asynchronous. You create a job, upload CSV data, mark it complete, and Salesforce processes it in the background in chunks, without counting every row as a separate API call. You poll until the job ends, then fetch successful and failed results. That is why it suits hundreds of thousands of rows, while REST would be slow and costly.
 
-A note on **API versions**. Every URL contains a version such as `v67.0`. Salesforce keeps old versions working for a long time, which is why code that has not been touched for years still runs, but new fields and features appear only in newer versions. Keep the version in one constant, as the helper above does, so upgrading is a one-line change that you test in a sandbox first.
+A note on **API versions**. Every URL contains a version such as `v68.0` (Winter '27). Versions 31.0 to 40.0 are deprecated in Summer '27 and retire in Summer '28. Salesforce keeps old versions working for a long time, which is why code that has not been touched for years still runs, but new fields and features appear only in newer versions. Keep the version in one constant, as the helper above does, so upgrading is a one-line change that you test in a sandbox first.
 
 A note on **limits**. Each org has a rolling 24-hour allocation of API requests that depends on its edition and licenses, and a separate cap on how many requests can be in progress at once. An integration that loops over thousands of records making one call each can use the whole allocation and block every other integration. Prefer calls that carry many records, and check usage before and after any large run.
 

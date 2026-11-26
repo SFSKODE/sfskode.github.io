@@ -219,7 +219,7 @@ private class LeadScoreActionTest {
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <Flow xmlns="http://soap.sforce.com/2006/04/metadata">
-    <apiVersion>67.0</apiVersion>
+    <apiVersion>68.0</apiVersion>
     <label>Lead Score On Create</label>
     <processType>AutoLaunchedFlow</processType>
     <status>Draft</status>

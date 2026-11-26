@@ -26,7 +26,7 @@ Juniper Consulting's account managers open an Accounts page that loads data from
 1. Create or use a **Developer Edition** org with a few Accounts.
 2. Create an **External Client App** (or a Connected App in older orgs) for server-to-server access, enable OAuth, and grant the minimum scopes such as `api`. Note the consumer key and secret; they belong only on your server.
 3. Create an integration user and give it a permission set that can read Account. Never use an administrator for an integration.
-4. The proxy below uses the REST API endpoint `/services/data/v67.0/query`. Confirm that your org's API version supports it (Setup, then API, or the release notes).
+4. The proxy below uses the REST API endpoint `/services/data/v68.0/query`. Confirm that your org's API version supports it (Setup, then API, or the release notes).
 
 ### In the external system
 
@@ -228,7 +228,7 @@ app.get('/api/accounts', async (req, res) => {
   }
   const soql = `SELECT Id, Name FROM Account WHERE Name LIKE '%${soqlEscape(name)}%' ORDER BY Name LIMIT 20`;
   try {
-    const sf = await fetch(`${instance}/services/data/v67.0/query?q=${encodeURIComponent(soql)}`, {
+    const sf = await fetch(`${instance}/services/data/v68.0/query?q=${encodeURIComponent(soql)}`, {
       headers: { Authorization: `Bearer ${token}` }
     });
     if (!sf.ok) {

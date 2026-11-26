@@ -92,7 +92,7 @@ Three terms to know:
 - A synchronous transaction can start up to 50 future calls and up to 50 Queueable jobs. A transaction already running in an async context can enqueue only one Queueable job.
 - A future method cannot call another future method, and cannot be called from a Batch job. Check `System.isFuture()` and `System.isBatch()` before calling one from shared code.
 - Batch jobs: at most five queued or active at once, with further jobs waiting in the Flex Queue.
-- Async limits are higher than sync limits: 200 SOQL queries instead of 100, 60 seconds of CPU instead of 10, and 12 MB of heap instead of 6 MB. Callouts stay at 100 per transaction.
+- Async limits are higher than sync limits: 200 SOQL queries instead of 100, 60 seconds of CPU instead of 10, and 25 MB of heap instead of 10 MB (raised in Winter '27). Callouts stay at 100 per transaction.
 - Daily cap: the number of async executions per 24 hours (future calls, Queueable jobs, Batch chunks, scheduled jobs) is the greater of 250,000 or 200 times the number of user licenses. Check the current docs for your edition.
 - Never do DML before a callout in the same transaction. The platform raises an "uncommitted work pending" error. Do all callouts first, then the DML. The service below follows this rule.
 

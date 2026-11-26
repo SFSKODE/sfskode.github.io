@@ -60,13 +60,13 @@ Rules from the documentation:
       "graphId": "g1",
       "compositeRequest": [
         {
-          "url": "/services/data/v67.0/sobjects/Account",
+          "url": "/services/data/v68.0/sobjects/Account",
           "method": "POST",
           "referenceId": "refAccount",
           "body": { "Name": "Acme Ltd" }
         },
         {
-          "url": "/services/data/v67.0/sobjects/Opportunity",
+          "url": "/services/data/v68.0/sobjects/Opportunity",
           "method": "POST",
           "referenceId": "refOpp",
           "body": {
@@ -82,14 +82,14 @@ Rules from the documentation:
 }
 ```
 
-Send it with `POST /services/data/v67.0/composite/graph`. The documentation also shows a graph that starts with a `GET` and uses `@{refAccount.Name}` in a later step.
+Send it with `POST /services/data/v68.0/composite/graph`. The documentation also shows a graph that starts with a `GET` and uses `@{refAccount.Name}` in a later step.
 
 ## Advanced end-to-end example
 
 **src/graphs.mjs**
 
 ```javascript
-const V = 'v67.0';
+const V = 'v68.0';
 export const MAX_NODES_PER_REQUEST = 500;
 export const NODES_PER_BUNDLE = 3;
 
@@ -144,7 +144,7 @@ export function packRequests(bundles, nodeBudget = 300) {
 ```javascript
 import { packRequests, safeGraphId } from './graphs.mjs';
 
-const url = () => `${process.env.INSTANCE}/services/data/v67.0/composite/graph`;
+const url = () => `${process.env.INSTANCE}/services/data/v68.0/composite/graph`;
 const headers = () => ({ Authorization: `Bearer ${process.env.TOKEN}`, 'Content-Type': 'application/json' });
 
 export function summarize(response) {

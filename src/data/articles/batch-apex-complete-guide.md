@@ -590,7 +590,7 @@ In the debug log (set a trace flag on the running user, Setup, Debug Logs) look 
    sf apex run test --class-names CaseArchiveBatchTest --target-org dev --result-format human --wait 10
    ```
    Expected: all six tests pass.
-2. **Run one real job.** In Developer Console, Debug, Open Execute Anonymous Apex:
+2. **Run one real job.** As anonymous Apex (Web Console, `sf apex run`, or Developer Console, Debug, Open Execute Anonymous Apex; the Developer Console is hidden by default since Winter '27):
    ```apex
    // Anonymous Apex
    Id jobId = Database.executeBatch(new CaseArchiveBatch(0), 200);
