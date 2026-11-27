@@ -49,9 +49,10 @@ The limits to design around, from the Apex Developer Guide at the time of writin
 | `fetch()` calls per transaction | 100 (each counts against SOQL query and row limits) |
 | Standard cursors created per org per rolling 24 hours | 10,000 |
 | Pagination cursors per org per rolling 24 hours | 200,000 |
-| Cursor expiry | 48 hours after creation |
+| Active rows per transaction through a pagination cursor | 100,000 |
+| Cursor expiry | 48 hours after creation (24 hours for Data 360 DMO cursors, Beta) |
 
-Creating a cursor over N rows deducts N from a daily row allowance immediately. That is why the most important rule is: **create the cursor once, store it, and never recreate it inside a chained job.**
+Creating a cursor over N rows deducts N from a daily row allowance immediately (the daily limits are recalculated hourly over the previous 24 hours, and they are consumed when the cursor is created, not when you fetch). That is why the most important rule is: **create the cursor once, store it, and never recreate it inside a chained job.**
 
 ## Basic example
 

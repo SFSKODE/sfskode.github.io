@@ -4,19 +4,21 @@ description: "The per-transaction Apex limits you hit most, sync vs async, plus 
 category: salesforce-development
 tags: [Apex, Governor Limits, Performance]
 publishedAt: 2026-10-20
-updatedAt: 2026-11-14
+updatedAt: 2026-11-26
 cover: /images/covers/apex-governor-limits-cheat-sheet.jpg
 featured: true
 sources:
   - title: "Execution Governors and Limits (Apex Developer Guide)"
-    url: "https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/pages/apex_gov_limits.htm"
+    url: "https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_gov_limits.htm"
   - title: "Apex Developer Guide"
     url: "https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/"
+  - title: "The Salesforce Developer's Guide to the Winter '27 Release"
+    url: "https://developer.salesforce.com/blogs/2026/10/developers-guide-to-the-winter-27-release"
 ---
 
 Salesforce is multitenant, so Apex runs under **governor limits** that stop one transaction from hogging shared resources. You cannot raise them. You design around them.
 
-> Limits change between releases, and a few numbers (heap size is the one most often misquoted) have been listed differently over time. Treat the table below as a working reference and confirm every number on the linked Execution Governors and Limits page before you rely on it in a design review.
+> Limits change between releases, and a few numbers (heap size is the one most often misquoted, and it was raised in Winter '27) have been listed differently over time. Treat the table below as a working reference and confirm every number on the linked Execution Governors and Limits page before you rely on it in a design review.
 
 This article gives you the numbers, then shows how limits behave in a real feature: a renewal-reminder engine that measures its own limit usage, processes 200 records in a constant number of queries, and hands work to a Queueable when the transaction has no headroom left.
 
@@ -55,18 +57,18 @@ Limits are counted **per transaction**. A transaction starts at an entry point (
 | Cumulative callout timeout | 120 seconds | 120 seconds |
 | `System.enqueueJob` calls | 50 | 1 |
 | `sendEmail` invocations | 10 | 10 |
-| Heap size | 10 MB | 25 MB |
+| Heap size (Winter '27 and later) | 10 MB | 25 MB |
 | CPU time | 10,000 ms | 60,000 ms |
 
 Other facts to remember:
 
+- Heap was **6 MB synchronous and 12 MB asynchronous** through Summer '26. Winter '27 raises it to **10 MB and 25 MB**, turned on automatically as each instance upgrades (final rollout was October 9, 2026), so confirm the value your org actually has on the limits page (or read `Limits.getLimitHeapSize()`). If you deploy from a Winter '27 sandbox to a production org that is still on Summer '26, select **Enforce the Summer '26 Apex heap limit** in the sandbox's Apex Settings to test against the old ceilings.
 - Triggers and `for` loops over query results process records in chunks of **200**.
 - Up to **5** Batch Apex jobs can be queued or active at once, and up to **100** can wait in the flex queue.
 - Each `execute` of a Batch Apex job and each Queueable job gets **its own** fresh set of limits.
 - `Test.startTest()` and `Test.stopTest()` give the code between them a fresh set of limits.
 - Some limits are not per transaction at all (for example daily asynchronous Apex executions and API request totals). They are measured over 24 hours. Check the limits page for those.
-- Heap limits were raised in Winter '27 (API 68.0): synchronous from 6 MB to 10 MB and asynchronous from 12 MB to 25 MB. The change is automatic, and sandboxes have an option to keep the Summer '26 limit until production upgrades.
-- Release notes also describe elastic async limits as a beta for Queueable and `@future`, extended to Batch Apex in Winter '27, and API 67.0 changed some defaults for Apex security. Neither changes the standard per-transaction numbers above; read the current release notes before you plan around them.
+- Summer '26 release notes describe elastic async limits as a beta for Queueable and `@future` (Winter '27 extends the beta to Batch Apex), and API 67.0 changes some defaults for Apex security. Neither changes the per-transaction numbers above; read the current release notes before you plan around them.
 
 ### The `Limits` class
 
@@ -83,7 +85,7 @@ You can read usage at run time. The pattern is always `Limits.getX()` (used so f
 
 ## Basic example
 
-The classic mistake, and its fix. Run both as anonymous Apex (Web Console, `sf apex run`, or the Developer Console, which is hidden by default since Winter '27) and compare.
+The classic mistake, and its fix. Run both as anonymous Apex (Web Console, VS Code with the Apex extension, or `sf apex run`) and compare.
 
 **Bad: one query per record**
 
@@ -485,7 +487,7 @@ Expected: `SOQL 2/100`, `DML 1/150`, and the same SOQL count whether the set hol
 - **Symptom: `Too many SOQL queries: 101` only in production.** Cause: your code is fine alone, but a Flow, a package trigger and your trigger share the counter. Fix: reduce queries everywhere on the object, and use the `CUMULATIVE_LIMIT_USAGE` log section to see which namespace used them.
 - **Symptom: `Too many DML rows: 10001`.** Cause: a single transaction updates too many records, for example an import plus child updates. Fix: process in a Batch Apex job (200 rows per `execute` by default) or chunk the work through a Queueable chain.
 - **Symptom: `Apex CPU time limit exceeded`.** Cause: nested loops over large collections, repeated string building, or heavy JSON work. Fix: precompute maps and sets, avoid `list.contains` in a loop, and move work to async.
-- **Symptom: `Apex heap size too large`.** Cause: a large query result or a list that holds everything at once. Fix: use SOQL for-loops, select fewer fields, and process in smaller batches. Confirm the current heap ceiling on the limits page.
+- **Symptom: `Apex heap size too large`.** Cause: a large query result or a list that holds everything at once. Fix: use SOQL for-loops, select fewer fields, and process in smaller batches. The ceiling is 10 MB synchronous and 25 MB asynchronous from Winter '27 (6 MB and 12 MB before); confirm the value for your org on the limits page.
 - **Symptom: a test passes with 3 records and fails with 200.** Cause: a hidden SOQL or DML in a loop. Fix: every trigger needs a 200-record test with a limit assertion, as shown above.
 - **Symptom: `Too many queueable jobs added to the queue: 2` from async code.** Cause: a Queueable can enqueue only one job. Fix: chain one job at a time, as `RenewalPlannerJob` does.
 - **Symptom: you "fixed" a limit by using `Test.isRunningTest()`.** Cause: the production path is untested. Fix: add a test seam such as `LimitsGuard.forceLow` that runs the real code.

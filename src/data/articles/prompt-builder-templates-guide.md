@@ -5,7 +5,6 @@ category: agentforce
 tags: [Prompt Builder, Agentforce, Generative AI, Apex, Intermediate]
 publishedAt: 2026-11-16
 updatedAt: 2026-11-16
-cover: /images/covers/prompt-builder-templates-guide.jpg
 sources:
   - title: "Salesforce Help: Prompt Builder"
     url: "https://help.salesforce.com/s/articleView?id=sf.prompt_builder.htm"
@@ -29,9 +28,9 @@ Juniper Consulting's support agents spend minutes reading long case histories. T
 2. **Choose the template type.** For a case summary use a **Flex** template with a record input (`Case`), or a record-summary type if your org offers one. Flex templates allow free-form text and merge fields.
 3. **Check data access.** The template runs as the user, so field-level security and sharing apply to the merged data. Confirm that agents can read Case Subject, Description, Status and the Account name.
 4. **Create the template.** Setup, Prompt Builder, New Prompt Template. Name it `Case_Summary` (the API name matters for Apex). Add the input "Case", write the prompt (below), and preview it against a few real records.
-5. **Set up Data Cloud grounding** only if you need more than the record's own fields (for example knowledge articles). It is an extra setup with its own licence; this article does not need it.
+5. **Set up Data 360 (formerly Data Cloud) grounding** only if you need more than the record's own fields (for example knowledge articles). It is an extra setup with its own licence; this article does not need it.
 6. **Versions.** Save as a draft, preview, then **Activate**. Treat changes as releases.
-7. **Developer tooling.** For the Apex part, create a DX project and set `"sourceApiVersion": "68.0"`.
+7. **Developer tooling.** For the Apex part, create a DX project and set `"sourceApiVersion": "67.0"`.
 
 ### In the external system
 

@@ -4,7 +4,7 @@ description: "Set up an External Client App, get a token, create Agent API sessi
 category: agentforce
 tags: [Agentforce, Agent API, Integration, OAuth, Advanced]
 publishedAt: 2026-11-10
-updatedAt: 2026-11-15
+updatedAt: 2026-11-26
 cover: /images/covers/agent-api-custom-client.jpg
 sources:
   - title: "Get Started with the Agent API"
@@ -34,7 +34,7 @@ Northgate Retail (a fictional retailer) has a web store with its own chat panel,
 
 ### In the external system
 
-1. Create a backend service (Node 20 or newer) that holds the consumer key and secret as environment variables.
+1. Create a backend service (Node 22 LTS or newer; the code also runs on Node 20, which reached end of life in April 2026) that holds the consumer key and secret as environment variables.
 2. Decide how your web store identifies a shopper (a session cookie, for example). The backend maps that identity to a Salesforce `sessionId`.
 3. Put the service behind HTTPS and apply rate limits.
 
@@ -47,7 +47,7 @@ Per the guide, the **token** comes from your My Domain with the client credentia
 - Stream: `https://api.salesforce.com/einstein/ai-agent/v1/sessions/{SESSION_ID}/messages/stream`
 - End: `https://api.salesforce.com/einstein/ai-agent/v1/sessions/{SESSION_ID}`
 
-**Accuracy note.** The Get Started page does **not** document the message request body or the HTTP methods for sending messages and ending the session. Take them from the **Agent API Examples** page or the official Postman collection and verify before coding. As commonly shown there, a message is sent to the session's messages endpoint as JSON containing a `message` object with a sequence number and text, and the session is ended with an HTTP DELETE on the session URL. In the code below, those two details live in one small function each, so you can correct them in one place.
+**Accuracy note.** The Get Started page does **not** document the message request body or the HTTP methods for sending messages and ending the session; the **Agent API Examples** page does. There, a message is sent with a POST to `/einstein/ai-agent/v1/sessions/{SESSION_ID}/messages` (or `.../messages/stream` for streaming) as JSON containing a `message` object with a numeric `sequenceId` that you increase for each message, a `type` of `Text` and the `text`. The session is ended with an HTTP `DELETE` on the session URL, and the example sends an `x-session-end-reason: UserRequest` header. In the code below, those details live in one small function each, so you can adjust them in one place if the API changes.
 
 ## Basic example
 
@@ -84,12 +84,12 @@ import { randomUUID } from 'node:crypto';
 
 const API = process.env.AGENT_API_BASE || 'https://api.salesforce.com';
 
-// VERIFY against the Agent API Examples page for your API version.
+// Matches the Agent API Examples page; re-check it if the API changes.
 export function buildMessageBody(text, sequenceId) {
   return { message: { sequenceId, type: 'Text', text } };
 }
 
-// VERIFY: the guide's Get Started page does not state the method for ending a session.
+// The Agent API Examples page ends a session with DELETE.
 export const END_METHOD = 'DELETE';
 
 export class AgentApiClient {
@@ -160,7 +160,10 @@ export class AgentApiClient {
   }
 
   endSession(sessionId) {
-    return this.call(`/einstein/ai-agent/v1/sessions/${sessionId}`, { method: END_METHOD });
+    return this.call(`/einstein/ai-agent/v1/sessions/${sessionId}`, {
+      method: END_METHOD,
+      headers: { 'x-session-end-reason': 'UserRequest' }
+    });
   }
 }
 ```
@@ -355,7 +358,7 @@ Your backend adds what the API does not provide: mapping a shopper to a session,
 1. Run `node --test` and confirm all six tests pass.
 2. In a sandbox, create the External Client App and call the token curl command. Confirm you receive an `access_token`.
 3. Run the session curl command with your agent id. Confirm a `sessionId` and a greeting.
-4. Check the Agent API Examples page and confirm `buildMessageBody` and `END_METHOD` match your API version. Fix them if not.
+4. Check the Agent API Examples page and confirm `buildMessageBody`, `END_METHOD` and the end-session header still match it. Fix them if not.
 5. Start the server, then `curl -X POST localhost:3000/chat -d '{"shopperId":"s1","text":"Where is order ORD-1001?"}'`. Confirm a reply.
 6. Send eleven messages in a minute and confirm the eleventh returns 429.
 7. Wait past the idle limit (or lower it in a test) and confirm the session is ended.
@@ -367,14 +370,14 @@ Your backend adds what the API does not provide: mapping a shopper to a session,
 - **One session for everyone.** Conversations mix. Create one session per conversation.
 - **Never ending sessions.** Sweep idle ones and end on logout.
 - **Trusting the shopper id from the browser.** Authenticate shoppers yourself and derive the id on the server.
-- **Copying request fields from memory.** Verify message and end-session details against the Examples page.
+- **Copying request fields from memory.** Check message and end-session details against the Examples page.
 
 ## Key takeaways
 
 - The Agent API gives your own app a conversation with an Agentforce agent: token, session, messages, end.
 - Keep secrets on the backend and map each shopper to their own session.
 - Limit message size and rate, and end idle sessions.
-- Isolate unverified request details so they are easy to fix.
+- Keep request details (message body, end-session call) in one place so they are easy to adjust.
 - Authenticating your own users is your responsibility.
 
 ## Where to go next

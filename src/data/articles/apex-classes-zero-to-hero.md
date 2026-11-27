@@ -4,7 +4,7 @@ description: "Learn Apex classes by building a B2B quote pricing service: method
 category: salesforce-development
 tags: [Apex, Classes, Beginner]
 publishedAt: 2026-11-08
-updatedAt: 2026-11-13
+updatedAt: 2026-11-26
 cover: /images/covers/apex-classes-zero-to-hero.jpg
 sources:
   - title: "Apex Developer Guide"
@@ -50,7 +50,7 @@ This article needs no external system. Everything runs inside Salesforce. Setup 
 
 ### In Salesforce
 
-1. **Get a safe org.** Use a Developer Edition org or a scratch org. Why: you will create fields and deploy code, and you do not want to do that in production. Verify: you can open Setup and the Developer Console (gear icon, then Developer Console).
+1. **Get a safe org.** Use a Developer Edition org or a scratch org. Why: you will create fields and deploy code, and you do not want to do that in production. Verify: you can open Setup and the Web Console (or the Developer Console, if an admin has re-enabled it).
 2. **Confirm Products and the Standard Price Book exist.** In the App Launcher open Products. Why: the service reads `PricebookEntry` rows from the Standard Price Book. Verify: run `SELECT Id FROM Pricebook2 WHERE IsStandard = true` in the Developer Console Query Editor and get one row.
 3. **Create the Account field `Customer Tier`.** Setup, Object Manager, Account, Fields & Relationships, New. Type Picklist, API name `Customer_Tier__c`, values `Standard`, `Silver`, `Gold`. Why: the customer tier rule reads it. Verify: the field appears on the Account page layout or in the field list.
 4. **Create the Custom Metadata Type `Volume Discount Tier`.** Setup, Custom Metadata Types, New. API name `Volume_Discount_Tier__mdt`. Add two Number fields: `Min_Quantity__c` (scale 0) and `Discount_Percent__c` (scale 2). Why: tiers become data that admins edit and deploy, not code. Verify: Manage Records lets you add a row.
@@ -149,7 +149,7 @@ public with sharing class LineCalculator {
 }
 ```
 
-Run it as anonymous Apex in the Web Console (command palette: "SFDX: Create Anonymous Apex Script", then "SFDX: Execute Anonymous Apex"), with `sf apex run`, or in the Developer Console (Debug, Open Execute Anonymous Window; hidden by default since Winter '27 and re-enabled in the Web Console settings):
+Run it as anonymous Apex in the Web Console, in the Developer Console (Debug, Open Execute Anonymous Window) if your org still shows it, or with `sf apex run`:
 
 ```apex
 // Anonymous Apex
@@ -868,7 +868,7 @@ The `sf apex generate class` line shows how a meta file is created. For the othe
 4. **Queries.** The service runs exactly two SOQL queries however many lines the quote has: one on `PricebookEntry`, one on `Account`. The synchronous limit is 100 queries and 50,000 returned rows per transaction. The naive version would use one query per line and fail at line 101.
 5. **Rules.** The loop calls each `PricingRule` through the interface. This is plain CPU work. The synchronous CPU limit is 10 seconds; 200 lines with two rules use a few milliseconds.
 6. **Security.** `WITH USER_MODE` makes the platform check Read on `PricebookEntry`, field-level security on every field in the query, and record sharing on `Account`. A user without access gets a `System.QueryException` that names the problem.
-7. **Return.** The result is serialized to JSON, and the heap (10 MB synchronous since Winter '27) is released with the transaction. Static variables disappear too.
+7. **Return.** The result is serialized to JSON, and the heap (6 MB synchronous before Winter '27, 10 MB from Winter '27) is released with the transaction. Static variables disappear too.
 
 In a debug log (Setup, Debug Logs, or `sf apex tail log`) look for these events:
 

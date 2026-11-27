@@ -4,7 +4,7 @@ description: "Build event-driven integration end to end: define and publish plat
 category: salesforce-development
 tags: [Platform Events, CDC, Pub/Sub API, Integration, Advanced]
 publishedAt: 2026-11-09
-updatedAt: 2026-11-14
+updatedAt: 2026-11-26
 cover: /images/covers/platform-events-cdc-pubsub.jpg
 sources:
   - title: "Platform Events Developer Guide"
@@ -31,13 +31,13 @@ Tessera Industrial (a fictional manufacturer) sells through Salesforce and fulfi
 2. Create the Named Credential `ERP_API` for the ERP's base URL, with its External Credential and authentication (Setup, Named Credentials; labels differ slightly by release). Verify: the credential saves. Tests use a mock, so you only need a working credential for the manual test.
 3. Create the platform event `Deal_Won__e` (Setup, Platform Events, New Platform Event, or deploy the XML below). Fields: `Opportunity_Id__c` (Text 18), `Amount__c` (Number 16,2), `Account_Name__c` (Text 255). Publish behavior: **Publish After Commit**, so subscribers never hear about a deal that rolled back.
 4. Create the custom object `Event_Receipt__c` with a unique, case-sensitive External ID text field `Event_Uuid__c` (80), a text field `Status__c` and a long text `Detail__c`. This is the idempotency ledger.
-5. Enable Change Data Capture for Account: Setup, Change Data Capture, move Account to Selected Entities, Save. Verify: `AccountChangeEvent` appears in the Developer Console's query editor object list.
+5. Enable Change Data Capture for Account: Setup, Change Data Capture, move Account to Selected Entities, Save. Verify: `AccountChangeEvent` appears in the object list of the Developer Console's query editor (or the Web Console, if you use it).
 6. Make an integration user or use an External Client App for the external reader (see the OAuth article). Grant the user the "Customize Application" or a permission set with API Enabled, and read access to the event channels you subscribe to.
 
 ### In the external system
 
 7. The ERP needs an endpoint such as `POST /orders` that returns `201` on success. For practice, use the small mock server in the verify section.
-8. For the Pub/Sub client: Node.js 18 or later, and the Pub/Sub API proto file from Salesforce's open-source Pub/Sub API repository. Verify: `node --version` prints 18 or higher.
+8. For the Pub/Sub client: Node.js 22 LTS or later, and the Pub/Sub API proto file from Salesforce's open-source Pub/Sub API repository. Verify: `node --version` prints 18 or higher.
 
 ## How it works
 

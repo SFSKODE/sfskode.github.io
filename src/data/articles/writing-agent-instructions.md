@@ -4,7 +4,7 @@ description: "Prompt-writing patterns for agent instructions: role, scope, steps
 category: agentforce
 tags: [Prompt Builder, Agentforce, Prompt Engineering]
 publishedAt: 2026-11-02
-updatedAt: 2026-11-15
+updatedAt: 2026-11-26
 cover: /images/covers/writing-agent-instructions.jpg
 sources:
   - title: "Prompt Builder and Einstein generative AI (Salesforce Developers)"
@@ -32,7 +32,7 @@ Ridgeway Bank (a fictional bank) has a service agent that answers questions abou
 ### In the external system
 
 1. Create a plain text file for each set of instructions in your Git repository, for example `agent/instructions/card-delivery.md`, so changes are reviewed like code.
-2. Install Node 20 or newer to run the checker and harness.
+2. Install Node 22 LTS or newer to run the checker and harness.
 3. Write 20 to 30 realistic test questions, including ones the agent should refuse. Save them in `agent/tests/cases.json`.
 
 ## How it works

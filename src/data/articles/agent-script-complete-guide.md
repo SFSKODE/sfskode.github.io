@@ -4,7 +4,7 @@ description: "Learn Agent Script, Agentforce's language for mixing LLM reasoning
 category: agentforce
 tags: [Agentforce, Agent Script, Hybrid Reasoning, Advanced]
 publishedAt: 2026-11-10
-updatedAt: 2026-11-15
+updatedAt: 2026-11-26
 cover: /images/covers/agent-script-complete-guide.jpg
 sources:
   - title: "Introducing Hybrid Reasoning with Agent Script"
@@ -13,8 +13,14 @@ sources:
     url: "https://developer.salesforce.com/docs/ai/agentforce/guide/ascript-reference.html"
   - title: "Agent Script Flow of Control"
     url: "https://developer.salesforce.com/docs/ai/agentforce/guide/ascript-flow.html"
+  - title: "Agent Script Blocks"
+    url: "https://developer.salesforce.com/docs/ai/agentforce/guide/ascript-blocks.html"
+  - title: "Agent Script System Variables"
+    url: "https://developer.salesforce.com/docs/ai/agentforce/guide/ascript-ref-variables-system.html"
   - title: "The Salesforce Developers Guide to the Summer '26 Release"
     url: "https://developer.salesforce.com/blogs/2026/06/the-salesforce-developers-guide-to-the-summer-26-release"
+  - title: "The Salesforce Developer's Guide to the Winter '27 Release"
+    url: "https://developer.salesforce.com/blogs/2026/10/developers-guide-to-the-winter-27-release"
 ---
 
 **Agent Script** is a human-readable, declarative language for writing agents on the Agentforce platform. It is compiled into an Agent Graph consumed by the Atlas reasoning engine. The idea is **hybrid reasoning**: strict, sequential logic for steps that must be exact (refunds, loan applications) while the language model still interprets natural language.
@@ -39,7 +45,7 @@ Cobalt Credit Union (a fictional lender) has an agent that helps customers with 
 ### In the external system
 
 1. Keep the script files in Git so changes are reviewed.
-2. Install Node 20 or newer if you want to run the flow-of-control model below.
+2. Install Node 22 or newer (the model runs on Node 20 as well, which is end of life) if you want to run the flow-of-control model below.
 3. Write test conversations for every branch, including the escalation path.
 
 ## How it works
@@ -58,7 +64,9 @@ Building blocks, from the reference:
 | `reasoning` | `instructions` and `actions` given to the LLM |
 | `after_reasoning` | Logic that runs after the reasoning loop |
 
-Syntax: `#` comment, `->` starts logic instructions, `|` starts prompt text, `{!expression}` inserts a variable into prompt text, `run`, `set`, `with`, `if`/`else`, `transition to`, `available when` (conditional tools), references like `@actions.`, `@outputs.`, `@variables.`, `@subagent.` and `@utils.` (`escalate`, `setVariables`, `transition to`). Operators include `==`, `!=`, `<`, `>` and `is None`.
+Syntax: `#` comment, `->` starts logic instructions, `|` starts prompt text, `{!expression}` inserts a variable into prompt text, `run`, `set`, `with`, `if`/`else`, `transition to`, `available when` (conditional tools), references like `@actions.`, `@outputs.`, `@variables.`, `@subagent.` and `@utils.` (`escalate`, `setVariables`, `transition to`). Operators include `==`, `!=`, `<`, `>`, `and`, `or`, `is None` and `is not None`.
+
+**Winter '27 additions.** The Winter '27 developer guide lists these Agent Script additions: `else if` chains (nested `if` and `elif` are not supported), a top-level `escalate` statement that hands the conversation to a person when a condition is met, expression functions `lower()`, `upper()`, `to_json()`, `from_json()` and `json_path(obj, path, default)`, the system variables `@system_variables.current_connection` and `@system_variables.current_modality` (besides `user_input`), `file_upload` (`mode`: `auto`, `managed`, `disabled` or `error`) and `runtime` (for example streaming and citations) settings under `config`, and `when @connection.<name>` to scope an action to a connection. Multi-agent orchestration is generally available: an orchestrator agent declares each specialist as a `connected_subagent` with a `target` and can set `delegate_escalation`. Some reference pages may lag behind the release (the page on expressions still says `else if` is unsupported at the time of writing), so confirm in the Agent Script reference before relying on a construct.
 
 **Flow of control.** Every request enters at `start_agent`, which sets initial values and routes to a subagent. Agentforce builds **one LLM prompt** from the subagent's reasoning instructions by processing them top to bottom: resolving variables, `if` conditions, `run` actions and text. Only the resolved text reaches the model.
 
@@ -280,23 +288,6 @@ This is the reason to choose Agent Script. In natural-language-only subagents, y
 4. Preview a conversation where the order is late and confirm the reply starts with an apology.
 5. Preview a long conversation and confirm the escalation happens after the turn limit.
 6. Run a test conversation for every branch, including the transition path, and keep them in Git with the script.
-
-## Winter '27 additions to Agent Script
-
-The Winter '27 release notes list several additions. Check the current Agent Script reference for exact syntax before you use them, because this article's examples were written against the earlier language.
-
-- **Expression functions:** `lower()`, `upper()`, `to_json()`, `from_json()` and `json_path(obj, path, default)` for working with text and JSON values.
-- **Control flow:** `else if` chains are supported; nested `if` and `elif` are not.
-- **System variables:** `@system_variables.current_connection` and `@system_variables.current_modality` tell the agent which channel it is running in.
-- **Top-level `escalate`:** a deterministic human handoff that does not depend on model judgement.
-- **Per-connection formatting:** `when @connection.<name>` blocks with `render`, including the built-in `@response_formats.json`, so one agent can answer differently in chat, voice or a custom client.
-- **File uploads** for Service and Employee agents, with a `file_upload` mode of `auto`, `managed`, `disabled` or `error`. In managed mode, files are placed in `@system_variables.uploaded_files`.
-- **A `runtime` block** for per-agent settings such as streaming and citations.
-- **Multi-Agent Orchestration (generally available):** `connected_subagent` with `delegate_escalation`.
-- **Metadata types** `AiAgentDefinition` and `AiAgentDefinitionVersion` at API 68.0 and later. Retrieve with `--root-type-with-dependencies`, and keep the previous types for deployments from a sandbox to a production org that has not upgraded yet.
-- **Tooling:** agents built with Agent Script Builder can be exposed as MCP tools from a custom Salesforce MCP server, and agent versions can be compared and merged in Agentforce Builder.
-
-None of these change the core idea of this article: put rules that must always hold into deterministic logic, and leave the conversation to the model.
 
 ## Common mistakes and fixes
 

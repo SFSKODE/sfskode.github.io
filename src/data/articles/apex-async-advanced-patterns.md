@@ -4,7 +4,7 @@ description: "Build reliable background processing: chained queueables, finalize
 category: salesforce-development
 tags: [Apex, Async, Advanced, Architecture, Batch Apex, Queueable]
 publishedAt: 2026-11-08
-updatedAt: 2026-11-13
+updatedAt: 2026-11-26
 cover: /images/covers/apex-async-advanced-patterns.jpg
 sources:
   - title: "Asynchronous Apex (Apex Developer Guide)"
@@ -21,6 +21,12 @@ sources:
     url: "https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_asyncapexjob.htm"
   - title: "Platform Events Developer Guide"
     url: "https://developer.salesforce.com/docs/atlas.en-us.platform_events.meta/platform_events/platform_events_intro.htm"
+  - title: "Migrate Platform Event Definitions with Metadata API"
+    url: "https://developer.salesforce.com/docs/atlas.en-us.platform_events.meta/platform_events/platform_events_metadata_api.htm"
+  - title: "The Salesforce Developer's Guide to the Winter '27 Release"
+    url: "https://developer.salesforce.com/blogs/2026/10/developers-guide-to-the-winter-27-release"
+  - title: "Standard-Volume Platform Event Allocations"
+    url: "https://developer.salesforce.com/docs/platform/platform-events/guide/platform-events-limits-svpe.html"
 ---
 
 Starting a background job is easy. Making it survive real traffic is the hard part. Jobs fail halfway, run twice, hit limits that you cannot catch, and fail quietly where nobody looks. This article is about the patterns that fix that: chaining jobs safely, catching failures that `try/catch` cannot, alerting through platform events, retrying with backoff, and making every step safe to repeat.
@@ -58,7 +64,7 @@ Use a Developer Edition or scratch org. Menu labels can differ slightly by relea
    | `Last_Error__c` | Text(255) |
 
 2. **Create `Fulfillment_Order__c`** with `Idempotency_Key__c` (Text(80), External ID, Unique), `Customer_Number__c` (Text(40)), `Sku__c` (Text(40)) and `Quantity__c` (Number(6, 0)). Why: the unique external ID lets the code upsert, so a repeat is an update, not a duplicate. Verify: the field is marked External ID.
-3. **Create the platform event `Async_Failure__e`** with Text fields `Job_Id__c` (18), `Job_Type__c` (80), `Message__c` (255) and a Number `Record_Count__c` (6, 0). Set Publish Behavior to Publish Immediately. Why: the failure alert must leave even if the failing transaction rolls back. Verify: it is listed under Platform Events. The XML is in the example.
+3. **Create the platform event `Async_Failure__e`** with Text fields `Job_Id__c` (18), `Job_Type__c` (80), `Message__c` (255) and a Number `Record_Count__c` (6, 0). Set Publish Behavior to Publish Immediately. Why: the failure alert must leave even if the failing transaction rolls back. New platform events are high volume (you can no longer define standard-volume ones), which is what the XML below uses. Verify: it is listed under Platform Events. The XML is in the example.
 4. **Create a Named Credential** `Warehouse_WMS` with an External Credential that sends the WMS API key as a header. Grant your user access to the principal through a permission set. Why: callouts use `callout:Warehouse_WMS` and the key stays out of Apex. Verify: the credential exists and your user is in the permission set. See [REST callouts and Named Credentials](/articles/rest-callouts-named-credentials/).
 5. **Give your user access** to all three custom objects and fields (a permission set with CRUD and field access). Why: the code uses `WITH USER_MODE`, so it respects the running user's permissions. Verify: you can create an `Order_Intake__c` record in the UI.
 
@@ -91,6 +97,8 @@ Install Salesforce CLI (`sf`). Verify: `sf --version` prints a version.
 ### Finalizers
 
 A **finalizer** is a class that implements `Finalizer` and is attached to a Queueable with `System.attachFinalizer`. After the Queueable ends, the platform runs the finalizer in a separate transaction and tells it the result: `SUCCESS` or `UNHANDLED_EXCEPTION`. This matters because some failures cannot be caught. A governor limit exception, for example, kills the transaction and `catch` never runs. The finalizer still runs. It can also enqueue the next job, so the chain survives a crash.
+
+In Winter '27 the CLI can scaffold this for you: `sf template generate apex class --template Queueable` creates a Queueable that already attaches a finalizer (and `--template Batchable` creates a batch class).
 
 ### Idempotency
 
@@ -159,7 +167,7 @@ Expected result: in Setup, Apex Jobs the job shows as Failed, and the debug log 
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
     <deploymentStatus>Deployed</deploymentStatus>
-    <eventType>StandardVolume</eventType>
+    <eventType>HighVolume</eventType>
     <label>Async Failure</label>
     <pluralLabel>Async Failures</pluralLabel>
     <publishBehavior>PublishImmediately</publishBehavior>
@@ -718,7 +726,7 @@ public with sharing class AsyncJobMonitor {
 }
 ```
 
-The same checks work as plain SOQL in the Web Console, Developer Console or `sf data query`:
+The same checks work as plain SOQL in the Web Console (or the Developer Console, if your org has re-enabled it) or with `sf data query`:
 
 ```soql
 SELECT Id, ApexClass.Name, JobType, Status, NumberOfErrors, ExtendedStatus,

@@ -4,7 +4,7 @@ description: "Expose your own REST endpoint with @RestResource: idempotent upser
 category: salesforce-development
 tags: [REST API, Apex, Integration, Intermediate]
 publishedAt: 2026-11-09
-updatedAt: 2026-11-15
+updatedAt: 2026-11-26
 cover: /images/covers/apex-rest-services-inbound.jpg
 sources:
   - title: "Apex REST (Apex Developer Guide)"
@@ -383,7 +383,7 @@ private class PartnerOrderApiTest {
 A partner client in Node shows the retry rule in practice:
 
 ```javascript
-// partner-client.mjs (run with Node 20+)
+// partner-client.mjs (run with Node 22+)
 const base = process.env.SF_INSTANCE_URL;
 const token = process.env.SF_TOKEN;
 

@@ -4,7 +4,7 @@ description: "A mental model for designing an Agentforce agent, with a worked or
 category: agentforce
 tags: [Agentforce, Agent Actions, Prompt Builder]
 publishedAt: 2026-10-31
-updatedAt: 2026-11-15
+updatedAt: 2026-11-26
 cover: /images/covers/agentforce-agent-actions-basics.jpg
 sources:
   - title: "Legacy Guide: Agentforce Reasoning, Subagents, Instructions, and Actions"
@@ -34,7 +34,7 @@ Pinecrest Outfitters (a fictional retailer) wants an agent that tells customers 
 
 ### In the external system
 
-None is required for this article. If order data lives elsewhere, the action later calls it through a Named Credential, as in the callouts articles. Node 20 or newer is needed to run the design checker.
+None is required for this article. If order data lives elsewhere, the action later calls it through a Named Credential, as in the callouts articles. Node 22 LTS or newer is needed to run the design checker.
 
 ## How it works
 

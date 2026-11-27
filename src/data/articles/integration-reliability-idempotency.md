@@ -377,7 +377,7 @@ public with sharing class StockReconciliationSchedule implements Schedulable {
 }
 ```
 
-Then schedule everything once from **Anonymous Apex** (Developer Console, **Debug > Open Execute Anonymous Window**). Salesforce cron expressions cannot run more often than hourly in one entry, so the retry job is scheduled four times to run every 15 minutes:
+Then schedule everything once from **Anonymous Apex** (Web Console, or the Developer Console, **Debug > Open Execute Anonymous Window**, if enabled; or `sf apex run`). Salesforce cron expressions cannot run more often than hourly in one entry, so the retry job is scheduled four times to run every 15 minutes:
 
 ```apex
 System.schedule('Stock retry 00', '0 0 * * * ?', new StockRetryJob());

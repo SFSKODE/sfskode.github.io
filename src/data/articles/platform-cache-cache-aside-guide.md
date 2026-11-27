@@ -9,8 +9,10 @@ cover: /images/covers/platform-cache-cache-aside-guide.jpg
 sources:
   - title: "Apex Developer Guide: Platform Cache"
     url: "https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/pages/apex_cache_namespace_overview.htm"
-  - title: "Apex Developer Guide: Apex governor limits"
-    url: "https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/"
+  - title: "Apex Developer Guide: Platform Cache Limits"
+    url: "https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/api/apex_platform_cache_limits.htm"
+  - title: "Apex Developer Guide: Platform Cache Considerations"
+    url: "https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/pages/apex_platform_cache_limitations.htm"
 ---
 
 Some data is expensive to get and rarely changes: a rate table loaded from an external service, a tree of product categories, the result of a heavy aggregate query, a token returned by another system. Reading it again in every transaction wastes callouts, SOQL queries and CPU time. **Platform Cache** is the built-in answer: a fast, in-memory key-value store that Apex can read and write, with time-to-live expiry and automatic eviction.
@@ -25,7 +27,7 @@ Crestline Lending (a fictional lender) prices every loan quote from a rate table
 
 ### In Salesforce
 
-1. Use a Developer Edition org or sandbox. Platform Cache capacity depends on edition and any purchased allocation, so check what your org has. Verify: Setup, Platform Cache shows a total capacity (trial or developer allocations exist for testing).
+1. Use a Developer Edition org or sandbox. Platform Cache capacity depends on edition and any purchased allocation: the Apex Developer Guide's limits page lists 10 MB for Enterprise Edition, 30 MB for Unlimited and Performance, and 0 MB for other editions unless you buy or are granted capacity. A sandbox copies the capacity model of its edition, so check what your org actually has. Verify: Setup, Platform Cache shows a total capacity above 0 MB.
 2. Create an **org cache partition** named `Rates` (Setup, Platform Cache, New Platform Cache Partition). Give it some capacity, for example 1 MB, from the org's available allocation. Verify: it appears in the partition list, and you can see its full name `local.Rates`.
 3. Optionally create a **session cache** partition for per-user data. Session cache lives for the user's login session; org cache is shared by everyone. Verify: both capacities are shown.
 4. Create a Named Credential `Treasury` for the external API (see [Named Credentials](/articles/rest-callouts-named-credentials/)) and grant principal access. Verify: a callout to `callout:Treasury/rates` returns data.
@@ -39,7 +41,8 @@ Crestline Lending (a fictional lender) prices every loan quote from a rate table
 
 - **Org cache** (`Cache.Org`) is shared by all users and survives across transactions. **Session cache** (`Cache.Session`) is private to one user session.
 - Keys are alphanumeric strings. When you use a partition-qualified key, the format is `local.PartitionName.keyName`. You can also work with one partition through `Cache.OrgPartition` or `Cache.SessionPartition`.
-- Every entry has a **time to live (TTL)** in seconds. After it passes the entry is gone. Org and session caches have a minimum, default and maximum TTL, so read the current limits page.
+- Every entry has a **time to live (TTL)** in seconds. After it passes the entry is gone. The limits page lists these values: for the org cache the minimum is 300 seconds (5 minutes), the default is 86,400 seconds (24 hours) and the maximum is 172,800 seconds (48 hours); for the session cache the minimum is 300 seconds and the maximum is 28,800 seconds (8 hours). A TTL below the minimum is not honoured, so do not design around a 30-second cache.
+- A key can be at most 50 characters, a single item put into the cache at most 100 KB, and a partition needs at least 1 MB. Cached data is not encrypted, and changing an Apex class in the org can invalidate some or all of the cache.
 - The cache is **not guaranteed**. Entries can be evicted at any time (it uses a least recently used policy, and capacity is limited), and a partition can be missing in a new org. A cache miss must always be a normal path, not an error.
 - **Cache-aside** is the pattern: look in the cache; on a miss load from the source, store the result, and return it.
 - `Cache.CacheBuilder` is an interface with one method, `doLoad(String key)`. Passing a builder class to `get` makes the platform call `doLoad` on a miss, so you write the loader once.
@@ -405,7 +408,7 @@ Cache read-mostly, shareable data. Do not cache per-user secrets in the org cach
 
 ## Choosing the TTL
 
-A TTL is a business decision about how stale the data may be. Short TTLs (a few minutes) suit data that can change at any time and is expensive to load. Long TTLs (hours) suit reference data that changes on a known schedule. Combine a long TTL with explicit invalidation when you can be told about changes. Add a little randomness to TTLs of many keys so they do not all expire at the same moment and trigger a stampede of reloads; the Node model above shares one load between concurrent requests inside a process, and in Apex you can reduce the stampede risk by keeping the cached object large and the number of keys small.
+A TTL is a business decision about how stale the data may be. Short TTLs (the minimum is 5 minutes) suit data that can change at any time and is expensive to load. Long TTLs (hours) suit reference data that changes on a known schedule. Combine a long TTL with explicit invalidation when you can be told about changes. Add a little randomness to TTLs of many keys so they do not all expire at the same moment and trigger a stampede of reloads; the Node model above shares one load between concurrent requests inside a process, and in Apex you can reduce the stampede risk by keeping the cached object large and the number of keys small.
 
 ## Test it and verify
 

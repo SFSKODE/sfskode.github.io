@@ -53,7 +53,7 @@ Nothing outside Salesforce is needed. There is no external system, API key or ca
 
 ### In Salesforce
 
-1. **Use a safe org.** A Developer Edition org or a scratch org, never production. Why: you will deploy code and fields. Verify: you can open Setup and the Developer Console.
+1. **Use a safe org.** A Developer Edition org or a scratch org, never production. Why: you will deploy code and fields. Verify: you can open Setup and the Web Console (or the Developer Console, if an admin has re-enabled it).
 2. **Create the Lead field.** Setup, Object Manager, Lead, Fields & Relationships, New. Text, length 20, label `Region`, API name `Region__c`. Verify: it appears in the field list.
 3. **Create the Opportunity fields.** `Discount_Percent__c` (Percent, length 3, decimal places 2), `Discount_Reason__c` (Text, 255) and `Next_Step_Due__c` (Date). Verify: all three are listed.
 4. **Create the Account fields.** `Credit_Hold__c` (Checkbox, default unchecked), `Won_Amount_Total__c` (Currency, length 16, decimal places 2), `Won_Deal_Count__c` (Number, length 18, decimal places 0), `Last_Won_On__c` (Date). Why: rule 7 reads the checkbox and rule 8 writes the other three. Verify: all four are listed.
@@ -144,7 +144,7 @@ trigger LeadTrigger on Lead (before insert) {
 }
 ```
 
-Try it as anonymous Apex in the Web Console, with `sf apex run`, or in the Developer Console (Debug, Open Execute Anonymous Window; hidden by default since Winter '27):
+Try it as anonymous Apex in the Web Console (or the Developer Console, Debug, Open Execute Anonymous Window, if enabled):
 
 ```apex
 // Anonymous Apex

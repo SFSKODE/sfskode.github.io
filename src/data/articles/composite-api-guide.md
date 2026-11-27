@@ -4,13 +4,17 @@ description: "Cut round trips and keep related changes together: the four REST c
 category: salesforce-development
 tags: [Composite API, REST API, Integration, Intermediate]
 publishedAt: 2026-11-10
-updatedAt: 2026-11-15
+updatedAt: 2026-11-26
 cover: /images/covers/composite-api-guide.jpg
 sources:
   - title: "REST API Developer Guide: Composite resources"
     url: "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/resources_composite.htm"
   - title: "Using Composite Graphs"
     url: "https://developer.salesforce.com/docs/platform/api-rest/guide/resources-composite-graph-introduction.html"
+  - title: "sObject Tree"
+    url: "https://developer.salesforce.com/docs/platform/api-rest/guide/resources-composite-sobject-tree.html"
+  - title: "Create Records Using sObject Collections"
+    url: "https://developer.salesforce.com/docs/platform/api-rest/guide/resources-composite-sobjects-collections-create.html"
 ---
 
 Every HTTP call costs latency and API quota. Composite resources bundle work so you make fewer calls, and some of them keep related changes together so they succeed or fail as one. This article explains the four resources, shows each with JSON, and builds a tested Node helper that uses them safely.
@@ -30,7 +34,7 @@ Alder Events (a fictional conference organiser) registers attendees through its 
 
 ### In the external system
 
-1. Use Node 20 or newer. Set `INSTANCE` and `TOKEN` as environment variables.
+1. Use Node 22 LTS or newer. Set `INSTANCE` and `TOKEN` as environment variables.
 2. Give each registration a stable id (`REG-2026-0412`) so repeats are safe.
 3. Decide in advance what the site does when a request fails: retry, or show the user a message.
 
@@ -44,7 +48,7 @@ Alder Events (a fictional conference organiser) registers attendees through its 
 | `/composite/sobjects` (collections) | Create, update, delete or read many records | up to 200 records | No |
 | `/composite/graph` | Several independent graphs of dependent steps | up to 500 nodes | Yes |
 
-The 25 and 500 figures come from the official Composite and Graph pages. Confirm the 200 and tree limits for your API version in the REST guide before depending on them.
+The 25 and 500 figures come from the official Composite and Graph pages, and the 200-record figures from the sObject Tree and sObject Collections pages (a tree request also allows up to five record types and five levels of depth). Check the REST guide for your API version before depending on them.
 
 Choose by the shape of the work:
 

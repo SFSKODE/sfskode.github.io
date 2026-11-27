@@ -15,7 +15,7 @@ sources:
     url: "https://developer.salesforce.com/blogs/2026/10/developers-guide-to-the-winter-27-release"
 ---
 
-For years, a Lightning web component template could only show a property or a getter. If you wanted "Open" or "Closed" based on a boolean, you wrote a getter in JavaScript, even for a one-line decision. **Complex template expressions** change that: a template can now contain a JavaScript expression such as a ternary, a template literal or an optional chain. In Winter '27 this is generally available, together with **`lwc:external`**, which renders third-party web components inside an LWC.
+For years, a Lightning web component template could only show a property or a getter. If you wanted "Open" or "Closed" based on a boolean, you wrote a getter in JavaScript, even for a one-line decision. **Complex template expressions** change that: a template can now contain a JavaScript expression such as a ternary, a template literal or an optional chain. Complex expressions need API version 66.0 (Spring '26) or later, and the Winter '27 developer guide lists them as generally available, together with **`lwc:external`**, which renders third-party web components inside an LWC.
 
 This article shows both. It builds a loan card with expressions, a tested linter that catches the constructs the platform rejects, a third-party web component loaded from a static resource, and Jest tests for the component. If you are new to LWC, read [LWC lifecycle and wire](/articles/lwc-lifecycle-and-wire/) first.
 
@@ -28,7 +28,7 @@ Crestline Lending (a fictional lender) has a loan card that shows a status label
 ### In Salesforce
 
 1. Use a Developer sandbox or scratch org on Winter '27 (API 68.0). Complex expressions need API version 66.0 or higher in the component's meta file. Verify: the component's `.js-meta.xml` has `<apiVersion>68.0</apiVersion>`.
-2. Enable **Lightning Web Security** if it is not already on (Setup, Session Settings). `lwc:external` requires it. Verify: the Session Settings page shows Lightning Web Security enabled.
+2. Check whether **Lightning Web Security** is on (Setup, Session Settings). The Salesforce page on third-party web components describes their behavior under Lightning Web Security, so this article assumes it is on. Verify: the Session Settings page shows the Lightning Web Security setting you expect.
 3. Create a DX project and deploy the component below with `sf project deploy start`. Verify: the component shows in the Lightning App Builder component list.
 4. Create a custom object `Loan__c` with `Name`, `Amount__c` (Currency), `Score__c` (Number 3,0) and `Status__c` (Text 20) to supply data. Verify: a sample record exists.
 
@@ -43,7 +43,7 @@ Crestline Lending (a fictional lender) has a loan card that shows a status label
 
 ## How it works
 
-**Complex expressions.** A template expression is anything inside `{ }`. The compiler accepts a JavaScript expression subset: template literals, ternaries, logical operators, function calls on values in scope, array expressions, optional chaining and nullish coalescing. These are rejected: `this`, `new`, and function declarations. When you use an expression in an attribute, wrap it in double quotes, as in `label="{score > 70 ? 'High' : 'Low'}"`. Keep expressions short: if you would hesitate to read it in a code review, move it to JavaScript.
+**Complex expressions.** A template expression is anything inside `{ }`. The compiler accepts a JavaScript expression subset: template literals, ternaries, logical operators, function calls on values in scope, array expressions, optional chaining and nullish coalescing. Salesforce's considerations page lists what is rejected: the `this` keyword, `new`, `delete`, `throw`, `yield`, `super`, `import`, function declarations and class expressions, arrow functions with block bodies, async arrow functions and `await`, assignment and update operators outside an arrow function, regular expression and BigInt literals, comments inside an expression, and the comma operator. Arrow functions with a concise body are allowed. The linter below checks the three mistakes people make most often (`this`, `new`, function declarations); the compiler is the final judge. One more rule: `<` in a text node must be written the other way round (use `{bar > foo}` instead of `{foo < bar}`), because expressions are parsed as HTML. When you use an expression in an attribute, wrap it in double quotes, as in `label="{score > 70 ? 'High' : 'Low'}"`. Keep expressions short: if you would hesitate to read it in a code review, move it to JavaScript.
 
 **`lwc:external`.** Add the `lwc:external` directive to a custom element in your template and the framework renders it natively, without the LWC wrapper. The element is registered with `customElements.define` by the third-party script, which you load with `loadScript` from `lightning/platformResourceLoader`. Data is passed as attributes by default, and as properties only if the element already defines them.
 
@@ -385,7 +385,7 @@ Tests run in a simulated DOM. Whether the Jest transformer in your installed ver
 - Third-party components must be pre-bundled as IIFE or UMD. `loadScript` does not support ES modules, npm packages that need bundling, or compilation steps.
 - Code in the external component cannot reach the global `document` through the shadow boundary. Use refs or the shadow root.
 - Dynamic component creation is not supported with `lwc:external`, and slotting is not supported under synthetic shadow.
-- Experience Builder sites did not support third-party web components with Lightning Web Security at the time of the documentation I read; check the current page if you build for a site.
+- Salesforce's page says Experience Builder sites do not currently support third-party web components when Lightning Web Security is enabled, and that Lightning Web Security does not support customized built-in elements that use the `extends` option; check the current page before you build for a site.
 - Salesforce does not provide support for third-party web components themselves.
 
 ## Test it and verify
@@ -410,9 +410,9 @@ Tests run in a simulated DOM. Whether the Jest transformer in your installed ver
 ## Key takeaways
 
 - Complex expressions put short JavaScript decisions in the template; keep logic in JavaScript when it grows.
-- `this`, `new` and function declarations are not allowed, and attribute expressions belong in double quotes.
+- `this`, `new`, function declarations and several other constructs are not allowed, and attribute expressions belong in double quotes.
 - Use API 66.0 or higher in the meta file; Winter '27 is API 68.0.
-- `lwc:external` needs Lightning Web Security and an IIFE or UMD bundle loaded with `loadScript`.
+- `lwc:external` needs an IIFE or UMD bundle loaded with `loadScript`, and Salesforce documents its behavior under Lightning Web Security.
 - Test components with Jest and lint templates in CI so rules fail fast.
 
 ## Where to go next

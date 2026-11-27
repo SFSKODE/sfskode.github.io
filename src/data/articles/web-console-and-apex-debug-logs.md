@@ -11,8 +11,8 @@ sources:
     url: "https://developer.salesforce.com/blogs/2026/09/announcing-general-availability-web-console-your-modern-in-browser-ide"
   - title: "The Salesforce Developer's Guide to the Winter '27 Release"
     url: "https://developer.salesforce.com/blogs/2026/10/developers-guide-to-the-winter-27-release"
-  - title: "Apex Developer Guide: Debugging Apex"
-    url: "https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/"
+  - title: "Web Console: Frequently Asked Questions (Salesforce Developers)"
+    url: "https://developer.salesforce.com/docs/platform/webconsole/guide/faq.html"
 ---
 
 When Apex misbehaves, the fastest teacher is the debug log: a line-by-line record of what the platform did, including every query, every DML statement, every exception and how close you came to each limit. The tools for getting and reading logs have changed in recent releases. The **Web Console** is now generally available as a browser-based IDE, and the **Developer Console** is hidden from Setup by default in Winter '27.
@@ -28,7 +28,7 @@ Crestline Lending (a fictional lender) has a trigger that "sometimes" fails on l
 ### In Salesforce
 
 1. Use a sandbox or Developer Edition org. Production Apex is read-only in the Web Console, so practice somewhere you can edit.
-2. Open Setup and search for Web Console (under Development at the time of writing). Confirm it is enabled. It is on by default for users with admin permissions, and you can turn global access on or off from that page. Verify: the Web Console opens from the Setup gear menu.
+2. Open Setup and search for Web Console (under Development at the time of writing). Confirm it is enabled. Salesforce's announcement says it is enabled by default for admins, and only an admin can turn it on or off for the org (users cannot do it for themselves). Third-party Winter '27 write-ups report that other users also need the **Web Console User** permission together with **View All Data**, and that the menu entry simply does not appear without them, so if a developer cannot see it, check both permissions first. Because View All Data bypasses sharing, grant it deliberately. Verify: the Web Console opens from the Setup gear menu.
 3. If you still want the old tool, the same page has an option to enable the Developer Console again. Verify: the Developer Console appears in the gear menu after you enable it.
 4. Make sure your user can view logs and set trace flags (the "View All Data" or "Manage Users" style permissions vary; an admin can grant a permission set with the debug-log permissions your org uses).
 5. Create the sample classes in this article in a Developer sandbox. Verify: `sf project deploy start` completes.
@@ -64,7 +64,7 @@ for (Account a : accounts) {
 System.debug('Queries used: ' + Limits.getQueries() + ' of ' + Limits.getLimitQueries());
 ```
 
-3. Open the log (the "Get Apex Debug Logs" command in the Web Console, or `sf apex get log --number 1` in a terminal). Look for the `USER_DEBUG` lines and the final limit summary.
+3. Open the log (the "Get Apex Debug Logs" command in the Web Console, or `sf apex get log --number 1` in a terminal). Salesforce's Web Console FAQ also lists a Debug Logs Viewer, so you can read logs without leaving the browser. Look for the `USER_DEBUG` lines and the final limit summary.
 
 From the CLI the same flow is scriptable:
 
@@ -403,7 +403,7 @@ Never log secrets, tokens or personal data. Anyone with log access can read them
 
 ## Web Console and Developer Console: what changed
 
-The Web Console is built on VS Code for the Web and the Salesforce Extensions for VS Code, so familiar commands appear in a command palette. You can edit Apex and, newly, Lightning web components from the Org Browser, run anonymous Apex and SOQL (including a SOQL Builder and a query plan), run tests, view logs, and manage trace flags. In production orgs, Apex there is read-only. The Developer Console is hidden from Setup by default in Winter '27 and can be switched back on from the Web Console settings page. A log analyzer feature was announced as coming later, so treat the Node tool as complementary.
+The Web Console is built on VS Code for the Web and the Salesforce Extensions for VS Code, so familiar commands appear in a command palette. You can edit Apex and, newly, Lightning web components from the Org Browser, run anonymous Apex and SOQL (including a SOQL Builder, and a Query Plan Inspector per Salesforce's Web Console FAQ), run tests, view logs, and manage trace flags. In production orgs, Apex there is read-only. The Developer Console is hidden from Setup by default in Winter '27 and can be switched back on from the Web Console settings page. A log analyzer feature was announced as coming later, so treat the Node tool as complementary.
 
 If you need a full development environment with more compute and AI help, Salesforce positions Agentforce Vibes IDE for that; the Web Console is for quick edits inside one org.
 
@@ -423,7 +423,7 @@ If you need a full development environment with more compute and AI help, Salesf
 - **Symptom: the failing user is not the one you are logging.** Cause: an integration or automated process user runs the code. Fix: set the trace flag on that user, or on the class or trigger.
 - **Symptom: logging slows the transaction.** Cause: FINEST everywhere. Fix: use INFO or DEBUG for Apex code and keep it targeted.
 - **Symptom: `System.debug` of a large object eats heap.** Cause: serialising big collections into a string. Fix: log counts and ids, not whole lists.
-- **Symptom: the Developer Console menu item is gone.** Cause: it is hidden by default in Winter '27. Fix: use the Web Console, or re-enable it in the Web Console settings.
+- **Symptom: the Developer Console menu item is gone.** Cause: it is hidden by default in Winter '27. Fix: use the Web Console, or have an admin re-enable the Developer Console on the Web Console Setup page.
 - **Symptom: editing Apex in production fails.** Cause: Apex is read-only in production in the Web Console. Fix: change code in a sandbox and deploy.
 
 ## Key takeaways

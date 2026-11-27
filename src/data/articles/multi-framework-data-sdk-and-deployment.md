@@ -4,7 +4,7 @@ description: "Query and mutate Salesforce data from React with the Data SDK thro
 category: react-and-salesforce
 tags: [Multi-Framework, React, Data SDK, GraphQL, Advanced]
 publishedAt: 2026-11-12
-updatedAt: 2026-11-16
+updatedAt: 2026-11-26
 cover: /images/covers/multi-framework-data-sdk-and-deployment.jpg
 sources:
   - title: "Build with React on Salesforce: Multi-Framework Is Now GA"
@@ -35,7 +35,7 @@ Juniper Consulting is building an internal "Account Pulse" app for account manag
 
 ### In the external system
 
-There is no external system for a hosted app. On your computer you need **Node 20 or newer**, an editor, and a Git repository. Scaffold the project from a template with the CLI as described in the Get Started page (see the getting-started article for the path), then add the files below to its `src` folder.
+There is no external system for a hosted app. On your computer you need **Node 22 LTS or newer**, an editor, and a Git repository. Scaffold the project from a template with the CLI as described in the Get Started page (see the getting-started article for the path), then add the files below to its `src` folder.
 
 ## How it works
 

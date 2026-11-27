@@ -4,13 +4,17 @@ description: "Pick the right OAuth flow, set up an External Client App, and buil
 category: salesforce-development
 tags: [OAuth, Integration, Security, Intermediate]
 publishedAt: 2026-11-09
-updatedAt: 2026-11-15
+updatedAt: 2026-11-26
 cover: /images/covers/oauth-flows-and-external-client-apps.jpg
 sources:
   - title: "External Client Apps and Connected Apps (Mobile SDK guide)"
     url: "https://developer.salesforce.com/docs/platform/mobile-sdk/guide/connected-apps.html"
   - title: "Get Started with the Agent API (ECA setup example)"
     url: "https://developer.salesforce.com/docs/ai/agentforce/guide/agent-api-get-started.html"
+  - title: "Create an External Client App in Your Org (Salesforce DX Developer Guide)"
+    url: "https://developer.salesforce.com/docs/platform/sfdx-dev/guide/sfdx-dev-auth-eca.html"
+  - title: "Spring '26 Release: Architect Highlights"
+    url: "https://www.salesforce.com/blog/spring-26-release-architect-highlights/"
 ---
 
 Before any external program can call Salesforce, it must prove who it is and receive an **access token**. OAuth is the standard way to do that. This article explains which flow to choose, how to set up an **External Client App** (the current way to register an integration), and gives you a small, tested token client you can reuse.
@@ -27,16 +31,16 @@ Harbor Logistics (a fictional shipper) runs a nightly job on its own server that
 2. Go to **Setup > External Client App Manager > New External Client App**. Give it a name, contact email and distribution state of **Local**.
 3. In the **OAuth settings** enable OAuth, add the scope **Manage user data via APIs (api)**, and add `https://localhost/callback` as a callback URL if the form requires one.
 4. For a server job with no user present, enable the **client credentials flow** and choose the **run as** user (your integration user). For a signed-token approach, enable the **JWT bearer flow** and upload the public certificate.
-5. Save, then open the app's settings and copy the **Consumer Key** and **Consumer Secret**. Store them in your secret manager.
+5. Save, then open the app's **Settings** tab, expand **OAuth Settings** and click **Consumer Key and Secret**. Salesforce emails you a verification code before it shows the values. Copy the **Consumer Key** and **Consumer Secret** and store them in your secret manager.
 6. In the app's policies, restrict access to the permission set you created, and set IP restrictions if your server has a fixed address.
 7. Find your **My Domain** login URL, such as `https://yourcompany.my.salesforce.com`. Token requests go to this domain.
 
-Because Salesforce has been restricting the creation of new connected apps in favour of External Client Apps, expect the External Client App Manager to be the path in current orgs. Menu names change between releases, so confirm them against the current documentation linked below.
+Since Spring '26, Salesforce restricts the creation of new connected apps by default, in both the UI and the Metadata API (package installation is the exception), and re-enabling creation requires a request to Salesforce Support. New inbound integrations should use External Client Apps, so expect the External Client App Manager to be the path in current orgs. Menu names change between releases, so confirm them against the current documentation linked below.
 
 ### In the external system
 
 1. Put the consumer key and secret (or the private key for JWT) in environment variables or a secret manager, never in the repository.
-2. Use Node 20 or newer so the built-in `fetch` and `crypto` modules are available.
+2. Use Node 22 or newer (the current Salesforce CLI also requires Node.js 22+) so the built-in `fetch` and `crypto` modules are available.
 3. Make the server clock accurate (NTP). JWT tokens carry an expiry and clock drift breaks them.
 
 ## How it works

@@ -1,11 +1,10 @@
 ---
-title: "Data Cloud Fundamentals: Data Streams, Data Model, Identity Resolution, Insights and Segments"
-description: "Understand Salesforce Data Cloud end to end: ingest data streams, map to the data model, resolve identities, build insights and segments, with a runnable identity model."
+title: "Data 360 (Formerly Data Cloud) Fundamentals: Streams, Data Model, Identity and Segments"
+description: "Understand Salesforce Data 360 (formerly Data Cloud): ingest streams, map the data model, resolve identities, build segments, with a runnable identity model."
 category: salesforce-development
-tags: [Data Cloud, Data Model, Identity Resolution, Intermediate]
+tags: [Data 360, Data Cloud, Data Model, Identity Resolution, Intermediate]
 publishedAt: 2026-11-16
 updatedAt: 2026-11-16
-cover: /images/covers/data-cloud-fundamentals.jpg
 sources:
   - title: "Salesforce Help: Data Cloud"
     url: "https://help.salesforce.com/s/articleView?id=sf.c360_a_data_cloud.htm"
@@ -13,11 +12,9 @@ sources:
     url: "https://developer.salesforce.com/docs/data/data-cloud-int/guide/dc-introduction.html"
 ---
 
-Customer data usually lives in many places: the CRM, a web store, a support tool, a marketing platform. Data Cloud brings it into one platform, links the records that belong to the same person, and makes the result usable for segments, analytics, automation and AI agents. This article explains the building blocks in the order you meet them, and includes a small program that behaves like identity resolution so you can see why records link.
+Customer data usually lives in many places: the CRM, a web store, a support tool, a marketing platform. Data 360 (the product formerly called Data Cloud) brings it into one platform, links the records that belong to the same person, and makes the result usable for segments, analytics, automation and AI agents. This article explains the building blocks in the order you meet them, and includes a small program that behaves like identity resolution so you can see why records link.
 
-> **Naming note:** Salesforce's current documentation and release notes increasingly call this product **Data 360**. This article keeps the name Data Cloud because it is still widely used and the object suffixes shown below (such as `__dlm` and `__dll`) are unchanged. Treat the two names as the same product family and check the current help for naming in your org.
->
-> Data Cloud screens, object names and API paths change between releases and depend on your licence. Use Setup and the current help for the exact steps. The identity model, tests and SQL below are written so you can understand and run the logic yourself, but the SQL needs your own object and field names.
+> Data 360 screens, object names and API paths change between releases and depend on your licence. Use Setup and the current help for the exact steps. The identity model, tests and SQL below are written so you can understand and run the logic yourself, but the SQL needs your own object and field names.
 
 ## The business scenario
 
@@ -27,18 +24,18 @@ Juniper Consulting sells training online and through account managers. Asha Rao 
 
 ### In Salesforce
 
-1. **Licence and provisioning.** Data Cloud is a separately licensed product. In a Developer Edition or a trial org, check that Data Cloud is provisioned (Setup, search "Data Cloud"). Provisioning can take a while and is done by the admin or Salesforce, so confirm before you plan anything else.
-2. **Permissions.** Assign the Data Cloud permission sets (Admin, Data Aware Specialist, Marketing roles) to the people who will build and use it. Do not give everyone the admin set.
+1. **Licence and provisioning.** Data 360 is a separately licensed product. In a Developer Edition or a trial org, check that Data 360 is provisioned (Setup, search "Data 360"). Provisioning can take a while and is done by the admin or Salesforce, so confirm before you plan anything else.
+2. **Permissions.** Assign the Data 360 permission sets (Admin, Data Aware Specialist, Marketing roles) to the people who will build and use it. Do not give everyone the admin set.
 3. **Connect sources.** For the CRM, use the **Salesforce CRM connector** (choose the objects, such as Contact, Account, Case). For files and databases, use **Amazon S3**, **Google Cloud Storage**, the **Ingestion API** or **MuleSoft** connectors as available.
-4. **Decide the data model up front.** Data Cloud uses a standard model with objects like **Individual**, **Contact Point Email**, **Contact Point Phone**, **Sales Order** and **Case**. Plan how each source field maps to it.
+4. **Decide the data model up front.** Data 360 uses a standard model with objects like **Individual**, **Contact Point Email**, **Contact Point Phone**, **Sales Order** and **Case**. Plan how each source field maps to it.
 5. **Consent and privacy.** Decide which consent fields you will ingest, and how they will be respected in segments and activations. Involve legal early.
 6. **Test data.** Prepare a small, realistic sample from each source (a few hundred rows), including some deliberate overlaps like the Asha Rao example.
 
 ### In the external system
 
 1. For the web store and event system, agree on a **file or API contract**: a stable primary key per record, an **updated timestamp**, UTF-8 CSV or JSON, one row per customer or per order.
-2. If you use the **Ingestion API**, create a connected app or External Client App with the scopes the Data Cloud documentation names, and store credentials in the sending system's secret store.
-3. For files in cloud storage, create a **read-only** access identity for Data Cloud and restrict it to the specific folder.
+2. If you use the **Ingestion API**, create a connected app or External Client App with the scopes the Data 360 documentation names, and store credentials in the sending system's secret store.
+3. For files in cloud storage, create a **read-only** access identity for Data 360 and restrict it to the specific folder.
 4. Decide the **frequency**: streaming for events, daily batch for orders, and who owns fixing bad rows in the source.
 
 ## How it works
@@ -52,11 +49,11 @@ The flow has six stages:
 5. **Segments** select people by rules ("bought training in 90 days AND has an open case"), refreshed on a schedule or near real time.
 6. **Activation and actions** send segments and data to other places: marketing channels, an advertising platform, a Salesforce flow, or an agent via **data actions** and **data graphs** that provide fast access to unified data.
 
-Two ideas to remember. First, Data Cloud is **not** just a bigger database: raw data stays in DLOs and the harmonised view is created by mapping, so you can remap without reloading. Second, **identity resolution is rule-driven and tunable**: tight rules miss duplicates, loose rules merge different people, and the right balance depends on your data.
+Two ideas to remember. First, Data 360 is **not** just a bigger database: raw data stays in DLOs and the harmonised view is created by mapping, so you can remap without reloading. Second, **identity resolution is rule-driven and tunable**: tight rules miss duplicates, loose rules merge different people, and the right balance depends on your data.
 
 ## Basic example
 
-A simple question on the unified data, written in the SQL that Data Cloud's query tools accept. The object and field names follow the standard model; check yours in the Data Explorer.
+A simple question on the unified data, written in the SQL that Data 360's query tools accept. The object and field names follow the standard model; check yours in the Data Explorer.
 
 ```sql
 -- Count unified individuals by whether they have an email contact point
@@ -77,7 +74,7 @@ First the identity model: a program that does what match and reconciliation rule
 **tools/identity.mjs**
 
 ```javascript
-// A small model of Data Cloud identity resolution: match rules link source profiles
+// A small model of Data 360 identity resolution: match rules link source profiles
 // into unified profiles, and reconciliation rules choose each unified field's value.
 
 export function normalizeEmail(value) {
@@ -230,7 +227,7 @@ Run it:
 node --test tools/identity.test.mjs
 ```
 
-Then the **calculated insight** and **segment** logic, written in SQL. Create them through the Calculated Insights and Segmentation tools in Data Cloud; the SQL expresses the idea and must be adapted to your object names.
+Then the **calculated insight** and **segment** logic, written in SQL. Create them through the Calculated Insights and Segmentation tools in Data 360; the SQL expresses the idea and must be adapted to your object names.
 
 ```sql
 -- Calculated insight: lifetime value per unified individual
@@ -295,7 +292,7 @@ identity_resolution:
 
 ## What happens behind the scenes
 
-When a data stream refreshes, Data Cloud reads the new and changed rows (using the key and updated timestamp), and writes them to the **Data Lake Object**. The DLO is stored in a data lake format that can hold very large volumes cheaply, which is why Data Cloud can keep the full raw history.
+When a data stream refreshes, Data 360 reads the new and changed rows (using the key and updated timestamp), and writes them to the **Data Lake Object**. The DLO is stored in a data lake format that can hold very large volumes cheaply, which is why Data 360 can keep the full raw history.
 
 **Mapping** is applied logically: the DMO is a view over one or more DLOs, so changing a mapping changes the harmonised data without reloading the raw data. Harmonised records then feed identity resolution.
 
@@ -309,7 +306,7 @@ Calculated insights and segments are **SQL over the unified data**, executed by 
 
 1. Run `node --test tools/identity.test.mjs` and confirm all seven tests pass.
 2. Change a rule in the program (for example remove the phone rule) and see which tests fail. That is how rule changes affect real data.
-3. In your Data Cloud org, ingest a small sample from two sources with overlapping people. After mapping, run identity resolution and open a **Unified Individual** to see its linked profiles.
+3. In your Data 360 org, ingest a small sample from two sources with overlapping people. After mapping, run identity resolution and open a **Unified Individual** to see its linked profiles.
 4. Run the calculated insight on the sample and compare the totals with the source system's own numbers.
 5. Build the segment, check its size, and spot check five people by hand.
 6. Review consent: confirm that people who opted out are not in the activation.
@@ -335,6 +332,6 @@ Calculated insights and segments are **SQL over the unified data**, executed by 
 
 ## Where to go next
 
-- Read [Salesforce data model and relationships](/articles/salesforce-data-model-and-relationships/) for how CRM objects relate before they reach Data Cloud.
+- Read [Salesforce data model and relationships](/articles/salesforce-data-model-and-relationships/) for how CRM objects relate before they reach Data 360.
 - Read [Data import, export and duplicate management](/articles/data-import-export-and-duplicate-management/) for cleaning data at the source.
 - Read [Prompt Builder templates guide](/articles/prompt-builder-templates-guide/) for using unified data in generative AI.

@@ -4,7 +4,7 @@ description: "Beginner React tutorial: set up Vite, write components, pass props
 category: react-and-salesforce
 tags: [React, JavaScript, Beginner]
 publishedAt: 2026-11-11
-updatedAt: 2026-11-16
+updatedAt: 2026-11-26
 cover: /images/covers/react-fundamentals-zero-to-hero.jpg
 sources:
   - title: "React Documentation: Learn React"
@@ -27,7 +27,7 @@ Nothing is needed for this article, because the data is fixed in the app. When y
 
 ### In the external system
 
-1. Install **Node 20 or newer** and a code editor such as Visual Studio Code.
+1. Install **Node 22 LTS or newer** and a code editor such as Visual Studio Code.
 2. Create the project:
 
 ```bash

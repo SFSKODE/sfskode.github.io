@@ -4,7 +4,7 @@ description: "What MCP means for Salesforce, how hosted servers expose governed 
 category: agentforce
 tags: [MCP, Agentforce, Integration, Security, Advanced]
 publishedAt: 2026-11-11
-updatedAt: 2026-11-16
+updatedAt: 2026-11-26
 cover: /images/covers/salesforce-hosted-mcp-servers.jpg
 sources:
   - title: "Salesforce Hosted MCP Servers (Developer docs)"
@@ -32,7 +32,7 @@ Quarry Equipment (a fictional supplier) lets its sales reps use an AI assistant 
 
 1. Choose an MCP client. The documentation names Claude, ChatGPT and Postman as compatible clients.
 2. Follow the documented steps to connect the client and test the connection.
-3. For the script below, install Node 20 or newer and the open-source MCP SDK with `npm install @modelcontextprotocol/sdk`.
+3. For the script below, install Node 22 LTS or newer and the open-source MCP SDK with `npm install @modelcontextprotocol/sdk`.
 
 ## How it works
 

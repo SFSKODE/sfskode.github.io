@@ -4,7 +4,7 @@ description: "Source-driven development with Git: branches, pull requests, scrat
 category: web-and-devops
 tags: [Git, DevOps, CI/CD, Salesforce CLI]
 publishedAt: 2026-11-05
-updatedAt: 2026-11-15
+updatedAt: 2026-11-26
 cover: /images/covers/git-workflow-salesforce-teams.jpg
 sources:
   - title: "Salesforce DX Developer Guide"
@@ -30,7 +30,7 @@ Tidewater Logistics (a fictional company) has four people changing the same Sale
 ### In the external system
 
 1. Create a repository on GitHub (or another Git host) and protect the `main` branch: require pull requests, at least one review, and passing checks.
-2. Install Git, Node 20 and the Salesforce CLI on each machine.
+2. Install Git, Node 22 LTS and the Salesforce CLI on each machine.
 3. Decide who reviews what, and write it down in a `CODEOWNERS` file (shown below).
 
 ## How it works
@@ -209,12 +209,12 @@ jobs:
   guard:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 22
       - name: Unit tests for scripts
         run: node --test scripts
       - name: Scan changed files for secrets and hard-coded Ids

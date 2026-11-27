@@ -53,7 +53,7 @@ This pattern needs no external system. Everything runs inside Salesforce. Setup 
 
 ### In Salesforce
 
-1. **Get a safe org.** Use a Developer Edition org or a scratch org, not production. Why: you will create fields and deploy code. Verify: you can open Setup and the Developer Console.
+1. **Get a safe org.** Use a Developer Edition org or a scratch org, not production. Why: you will create fields and deploy code. Verify: you can open Setup and the Web Console (or the Developer Console, if an admin has re-enabled it).
 2. **Create the Account field `Segment`.** Setup, Object Manager, Account, Fields & Relationships, New. Type Text, length 20, API name `Segment__c`. Why: rule 1 writes it. Verify: it shows in the field list.
 3. **Create two Opportunity fields.** `Account_Segment__c` (Text, 20) and `Stage_Changed_On__c` (Date). Why: rules 2 and 3 write them. Verify: both appear on Opportunity.
 4. **Create the Custom Metadata Type `Trigger Setting`.** Setup, Custom Metadata Types, New. API name `Trigger_Setting__mdt`. Add one Checkbox field `Is_Active__c`, default checked. Why: this is the org-wide switch an admin can flip without a deployment. Verify: Manage Records opens an empty list.
@@ -145,7 +145,7 @@ public with sharing class ContactTriggerHandler {
 }
 ```
 
-Try it in the Developer Console (Debug, Open Execute Anonymous Window):
+Try it as anonymous Apex in the Web Console (or the Developer Console, Debug, Open Execute Anonymous Window, if enabled):
 
 ```apex
 // Anonymous Apex

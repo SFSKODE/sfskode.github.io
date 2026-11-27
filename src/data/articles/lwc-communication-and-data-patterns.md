@@ -4,7 +4,7 @@ description: "Build a three-component LWC screen using @api, custom events, Ligh
 category: salesforce-development
 tags: [LWC, JavaScript, Intermediate]
 publishedAt: 2026-11-12
-updatedAt: 2026-11-15
+updatedAt: 2026-11-26
 cover: /images/covers/lwc-communication-and-data-patterns.jpg
 sources:
   - title: "Lightning Web Components Developer Guide"
@@ -30,7 +30,7 @@ Coastline Realty (a fictional agency) has an **Accounts workspace** page. A **fi
 
 ### In the external system
 
-None is needed. For unit tests install Node 20 or newer and `@salesforce/sfdx-lwc-jest` in your project.
+None is needed. For unit tests install Node 22 LTS or newer and `@salesforce/sfdx-lwc-jest` in your project.
 
 ## How it works
 

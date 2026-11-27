@@ -4,13 +4,17 @@ description: "Export big data sets with Bulk API 2.0 query jobs, page results wi
 category: salesforce-development
 tags: [Bulk API, Integration, Data Loading, Advanced]
 publishedAt: 2026-11-10
-updatedAt: 2026-11-15
+updatedAt: 2026-11-26
 cover: /images/covers/bulk-api-2-query-and-advanced.jpg
 sources:
   - title: "Bulk API and Bulk API 2.0 Limits and Allocations"
     url: "https://developer.salesforce.com/docs/platform/salesforce-app-limits-cheatsheet/guide/salesforce-app-limits-platform-bulkapi.html"
   - title: "Bulk API 2.0 Developer Guide"
     url: "https://developer.salesforce.com/docs/atlas.en-us.api_asynch.meta/api_asynch/"
+  - title: "Understanding Bulk API 2.0 Query"
+    url: "https://developer.salesforce.com/docs/platform/api-asynch/guide/queries.html"
+  - title: "Get Results for a Query Job"
+    url: "https://developer.salesforce.com/docs/platform/api-asynch/guide/query-get-job-results.html"
 ---
 
 The ingest article showed how to push data in. This article covers the other direction: exporting large data sets with **query jobs**, keeping an outside copy up to date with an **incremental sync**, and the practices that make large loads fast and safe.
@@ -32,7 +36,7 @@ Redwood Insurance (a fictional insurer) feeds its analytics warehouse from Sales
 
 1. Provide durable storage for the **high-water mark**, which is the last `SystemModstamp` you have successfully applied. A small table or file is enough.
 2. Make the target load idempotent, using upsert on `Legacy_Id__c` or the Salesforce Id.
-3. Set `INSTANCE` and `TOKEN` environment variables and use Node 20 or newer.
+3. Set `INSTANCE` and `TOKEN` environment variables and use Node 22 LTS or newer.
 
 ## How it works
 
@@ -50,7 +54,7 @@ Official query limits:
 - If a query is retried more than 15 times, add filters and try again
 - Query jobs do not use the shared batch allocation
 
-Some SOQL features, such as certain relationship constructs, are not supported in bulk queries. Validate your statement in a sandbox first.
+Some SOQL features are not supported in bulk queries: `GROUP BY`, `OFFSET`, `TYPEOF`, aggregate functions such as `COUNT()`, compound address and geolocation fields, and parent-to-child (subquery) relationship queries. Child-to-parent queries are supported. Also note that `ORDER BY` and `LIMIT` disable PK chunking, so a big ordered query can run slower or time out; if that happens, remove `ORDER BY` first and add filters. Validate your statement in a sandbox first.
 
 ## Basic example
 
@@ -243,7 +247,7 @@ Schedule it with cron on a server, for example every night at 01:30:
 
 A query job runs on Salesforce's servers, away from your request. Salesforce executes the SOQL, writes the output to a result file, and keeps it for seven days. Each page request reads a slice of that file and returns a locator that points at the next slice. The locator is why you can resume after a failure without re-running the query.
 
-The incremental pattern works because `SystemModstamp` changes whenever any change is made to a record, including by automation and by integrations. Sorting by it and moving the mark only after all pages were applied means a crash causes a repeat of changes, never a loss. Repeats are harmless because the target applies upserts. Deleted records appear only through `queryAll` with `IsDeleted = true`, so the same job covers inserts, updates and deletes.
+The incremental pattern works because `SystemModstamp` changes whenever any change is made to a record, including by automation and by integrations. Sorting by it (optional here, because the code tracks the highest value across all pages, and `ORDER BY` can slow very large bulk queries) and moving the mark only after all pages were applied means a crash causes a repeat of changes, never a loss. Repeats are harmless because the target applies upserts. Deleted records appear only through `queryAll` with `IsDeleted = true`, so the same job covers inserts, updates and deletes.
 
 One subtle point: use `>` with the **highest value you saw**, not the time the job started. A change committed while your job was running might carry an earlier timestamp than your start time, and using the start time would skip it.
 

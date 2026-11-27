@@ -4,11 +4,17 @@ description: "Learn when each LWC hook runs, how @wire and imperative Apex diffe
 category: salesforce-development
 tags: [LWC, JavaScript, Wire]
 publishedAt: 2026-10-25
-updatedAt: 2026-11-15
+updatedAt: 2026-11-26
 cover: /images/covers/lwc-lifecycle-and-wire.jpg
 sources:
   - title: "Lightning Web Components Developer Guide"
     url: "https://developer.salesforce.com/docs/platform/lwc/overview"
+  - title: "Lifecycle Hooks (LWC Developer Guide)"
+    url: "https://developer.salesforce.com/docs/platform/lwc/guide/create-lifecycle-hooks.html"
+  - title: "Write Jest Tests for Lightning Web Components That Use the Wire Service"
+    url: "https://developer.salesforce.com/docs/platform/lwc/guide/unit-testing-using-wire-utility.html"
+  - title: "The Developer's Guide to the Winter '27 Release"
+    url: "https://developer.salesforce.com/blogs/2026/10/developers-guide-to-the-winter-27-release"
   - title: "Jest tests for Lightning Web Components (sfdx-lwc-jest)"
     url: "https://github.com/salesforce/sfdx-lwc-jest"
 ---
@@ -30,7 +36,7 @@ Birchwood Credit (a fictional lender) wants an **Account Health Card** on the Ac
 
 ### In the external system
 
-There is no external system for this example. For local testing install Node 20 or newer and run `npm install` in your project, which brings in `@salesforce/sfdx-lwc-jest` for the unit tests.
+There is no external system for this example. For local testing install Node 22 or newer (the current Salesforce CLI requires Node.js 22+) and run `npm install` in your project, which brings in `@salesforce/sfdx-lwc-jest` for the unit tests.
 
 ## How it works
 
@@ -368,7 +374,7 @@ When the agent leaves the page, `disconnectedCallback` fires. A timer that is no
 
 A few notes on the choices in the code. The component uses `cacheable=false` for the count because the number should be fresh on every call, whereas a wired method would return cached data and ignore the timer. The error reducer handles the three shapes you will meet in practice: an array of messages from the UI API, a `body.message` from Apex, and a plain JavaScript `Error`. And the template uses `lwc:if`, `lwc:elseif` and `lwc:else`, the current conditional directives, instead of the older `if:true` form.
 
-One caution about the Jest file: the way wire adapters are mocked has changed across versions of `@salesforce/sfdx-lwc-jest`. The `getRecord.emit(...)` style shown here works with recent versions, but if your project is older you may need the `registerLdsTestWireAdapter` helper from the package instead. Check the package documentation for the version you installed, and keep the assertions the same.
+One caution about the Jest file: the way wire adapters are mocked has changed across versions of `@salesforce/sfdx-lwc-jest`. The `getRecord.emit(...)` style shown here is the approach in the current LWC developer guide. Older code (Spring '21 and earlier) registered wire adapters with `registerLdsTestWireAdapter`; that code still works but is not recommended. Check the package documentation for the version you installed, and keep the assertions the same.
 
 ## Test it and verify
 

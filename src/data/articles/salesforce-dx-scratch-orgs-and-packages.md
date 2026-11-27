@@ -4,8 +4,7 @@ description: "Set up Salesforce DX: project structure, scratch org definitions, 
 category: web-and-devops
 tags: [Salesforce DX, Scratch Orgs, Packaging, CI/CD, Intermediate]
 publishedAt: 2026-11-16
-updatedAt: 2026-11-16
-cover: /images/covers/salesforce-dx-scratch-orgs-and-packages.jpg
+updatedAt: 2026-11-26
 sources:
   - title: "Salesforce DX Developer Guide"
     url: "https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/"
@@ -33,7 +32,7 @@ Juniper Consulting has five developers who all work in one shared sandbox. They 
 
 ### In the external system
 
-1. Install **Node 20 or newer** and the **Salesforce CLI**: `npm install --global @salesforce/cli`. Check with `sf --version`.
+1. Install **Node 22 LTS or newer** and the **Salesforce CLI**: `npm install --global @salesforce/cli`. Check with `sf --version`.
 2. Install **Visual Studio Code** and the **Salesforce Extension Pack**.
 3. Create a **Git repository** (GitHub or similar) and agree on a branching model, such as short feature branches merged by pull request into `main`.
 4. For CI, create a **JWT-based connected app / External Client App** in the Dev Hub org, generate a private key, and store the key and client id as repository secrets. See the OAuth article for the steps.
@@ -121,7 +120,7 @@ The files below make everything repeatable. Create them in the project root.
   "name": "juniper",
   "namespace": "",
   "sfdcLoginUrl": "https://login.salesforce.com",
-  "sourceApiVersion": "68.0",
+  "sourceApiVersion": "67.0",
   "packageAliases": {}
 }
 ```
@@ -204,7 +203,7 @@ export function checkProject(project) {
     problems.push(`Exactly one package directory must be default (found ${defaults.length}).`);
   }
   if (!API_VERSION.test(String(project.sourceApiVersion ?? ''))) {
-    problems.push('sourceApiVersion should look like "68.0".');
+    problems.push('sourceApiVersion should look like "67.0".');
   }
 
   const names = new Set();
@@ -276,7 +275,7 @@ const good = {
     { path: 'app', package: 'Juniper-App', versionNumber: '1.0.0.NEXT', default: true,
       dependencies: [{ package: 'Juniper-Core', versionNumber: '1.2.0.LATEST' }] }
   ],
-  sourceApiVersion: '68.0',
+  sourceApiVersion: '67.0',
   packageAliases: { 'Juniper-Core': '0Ho000000000001AAA', 'Juniper-App': '0Ho000000000002AAA' }
 };
 
@@ -348,10 +347,10 @@ jobs:
   checks:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 22
       - run: npm install --global @salesforce/cli
       - name: Project file checks
         run: |

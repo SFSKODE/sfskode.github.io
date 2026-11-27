@@ -4,7 +4,7 @@ description: "Unit test Lightning web components with Jest: setup, mocking Apex 
 category: salesforce-development
 tags: [LWC, Jest, Testing, Intermediate]
 publishedAt: 2026-11-16
-updatedAt: 2026-11-16
+updatedAt: 2026-11-26
 sources:
   - title: "Test Lightning Web Components (Jest)"
     url: "https://developer.salesforce.com/docs/platform/lwc/guide/testing.html"
@@ -34,7 +34,7 @@ Unit tests do not need an org, but the project must be a Salesforce DX project:
 
 On your computer or CI runner:
 
-1. Install Node 20 or newer.
+1. Install Node 22 LTS or newer.
 2. Install dependencies: `npm install`. If tooling is missing, run `npm install --save-dev @salesforce/sfdx-lwc-jest`.
 3. Make sure `package.json` has these scripts:
 
@@ -356,10 +356,10 @@ jobs:
   jest:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 22
       - run: npm ci
       - run: npm run test:unit:coverage
 ```

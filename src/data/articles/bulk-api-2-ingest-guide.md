@@ -4,7 +4,7 @@ description: "Load large data sets with Bulk API 2.0: job lifecycle, CSV chunkin
 category: salesforce-development
 tags: [Bulk API, Integration, Data Loading, Intermediate]
 publishedAt: 2026-11-10
-updatedAt: 2026-11-15
+updatedAt: 2026-11-26
 cover: /images/covers/bulk-api-2-ingest-guide.jpg
 sources:
   - title: "Bulk API and Bulk API 2.0 Limits and Allocations"
@@ -33,7 +33,7 @@ Redwood Insurance (a fictional insurer) is migrating 3 million policy records fr
 
 1. Export the legacy data to UTF-8 CSV with a header row of **field API names**, such as `Legacy_Id__c,Holder_Name__c,Premium__c`.
 2. Use ISO dates (`2026-12-01`) and plain numbers without currency symbols.
-3. Install Node 20 or newer for the loader in this article, and set `INSTANCE` and `TOKEN` environment variables.
+3. Install Node 22 LTS or newer for the loader in this article, and set `INSTANCE` and `TOKEN` environment variables.
 
 ## How it works
 
@@ -66,7 +66,7 @@ Ingest jobs draw from the shared allocation of 15,000 batches per 24 hours. If a
 The whole lifecycle in curl:
 
 ```bash
-BASE="$INSTANCE/services/data/v68.0"
+BASE="$INSTANCE/services/data/v67.0"
 H="Authorization: Bearer $TOKEN"
 
 # 1. Create the job (note the id in the reply)
@@ -146,7 +146,7 @@ export function failedRowsToRetryCsv(failedCsv) {
 ```javascript
 const instance = process.env.INSTANCE;
 const token = process.env.TOKEN;
-const base = `${instance}/services/data/v68.0/jobs/ingest`;
+const base = `${instance}/services/data/v67.0/jobs/ingest`;
 const json = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 

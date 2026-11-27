@@ -4,7 +4,7 @@ description: "A staged learning path from data model to Agentforce, with a start
 category: salesforce-development
 tags: [Roadmap, Beginner, Career]
 publishedAt: 2026-11-12
-updatedAt: 2026-11-15
+updatedAt: 2026-11-26
 cover: /images/covers/salesforce-developer-learning-roadmap.jpg
 featured: true
 sources:
@@ -31,7 +31,7 @@ You are learning Salesforce development to change careers or to grow inside your
 
 ### In the external system
 
-1. Install Node 20 or newer, Git and Visual Studio Code.
+1. Install Node 22 LTS or newer, Git and Visual Studio Code.
 2. Install the Salesforce CLI and the Salesforce Extension Pack for VS Code.
 3. Create a free GitHub account and an empty repository named `salesforce-learning`.
 4. Create a free Trailhead account and join the Salesforce Developer community for questions.
@@ -132,7 +132,7 @@ And `sfdx-project.json` tells the CLI where your source lives and which API vers
   "name": "salesforce-learning",
   "namespace": "",
   "sfdcLoginUrl": "https://login.salesforce.com",
-  "sourceApiVersion": "68.0"
+  "sourceApiVersion": "67.0"
 }
 ```
 

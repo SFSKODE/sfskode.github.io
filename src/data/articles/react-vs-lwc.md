@@ -4,7 +4,7 @@ description: "Compare React and LWC for Salesforce work with the same account li
 category: react-and-salesforce
 tags: [React, LWC, Architecture]
 publishedAt: 2026-11-03
-updatedAt: 2026-11-16
+updatedAt: 2026-11-26
 cover: /images/covers/react-vs-lwc.jpg
 featured: true
 sources:
@@ -31,7 +31,7 @@ Foxglove Property (a fictional estate agency) needs an **account list with a sea
 
 ### In the external system
 
-1. Install Node 20 or newer.
+1. Install Node 22 LTS or newer.
 2. Create the React app with `npm create vite@latest portal -- --template react` and add Vitest and React Testing Library for tests.
 3. Decide where the proxy runs and how portal visitors are authenticated, because a public portal must never expose all accounts.
 
@@ -161,7 +161,7 @@ createServer(async (req, res) => {
     return;
   }
   const soql = 'SELECT Id, Name, Industry FROM Account ORDER BY Name LIMIT 100';
-  const sf = await fetch(`${instance}/services/data/v68.0/query?q=${encodeURIComponent(soql)}`, {
+  const sf = await fetch(`${instance}/services/data/v67.0/query?q=${encodeURIComponent(soql)}`, {
     headers: { Authorization: `Bearer ${token}` }
   });
   if (!sf.ok) {

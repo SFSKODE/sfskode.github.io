@@ -4,7 +4,7 @@ description: "Request-reply, fire-and-forget, batch sync, remote call-in and vir
 category: salesforce-development
 tags: [Integration, Architecture, Intermediate]
 publishedAt: 2026-11-09
-updatedAt: 2026-11-15
+updatedAt: 2026-11-26
 cover: /images/covers/cross-system-integration-patterns.jpg
 sources:
   - title: "Integration Patterns (Salesforce Architects)"

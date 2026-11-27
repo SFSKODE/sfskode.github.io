@@ -4,13 +4,15 @@ description: "When middleware pays off and what it does for Salesforce: a workin
 category: salesforce-development
 tags: [Integration, MuleSoft, Middleware, Architecture, Advanced]
 publishedAt: 2026-11-09
-updatedAt: 2026-11-15
+updatedAt: 2026-11-26
 cover: /images/covers/middleware-integrations-guide.jpg
 sources:
   - title: "MuleSoft documentation"
     url: "https://docs.mulesoft.com/"
+  - title: "Explore API-led Connectivity (Trailhead)"
+    url: "https://trailhead.salesforce.com/content/learn/modules/application-networks-and-api-led-connectivity-in-mulesoft/explore-api-led-connectivity"
   - title: "Integration Patterns (Salesforce Architects)"
-    url: "https://architect.salesforce.com/docs/architect/fundamentals/guide/integration-patterns"
+    url: "https://architect.salesforce.com/fundamentals/integration-patterns"
 ---
 
 **Middleware** is software between systems that moves, transforms and orchestrates data. Examples include MuleSoft Anypoint Platform, Boomi, Workato, Informatica, Azure Logic Apps and Service Bus, AWS Step Functions, or a small custom service. Salesforce owns MuleSoft, so many Salesforce customers choose it, but the ideas apply to every tool. To make them concrete, this article builds the core of a middleware flow as a small Node service, so you can see what any tool is doing for you.

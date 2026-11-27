@@ -4,7 +4,7 @@ description: "A repeatable release routine with scripts: find stale API versions
 category: salesforce-administration
 tags: [Releases, Sandbox, Admin]
 publishedAt: 2026-11-07
-updatedAt: 2026-11-15
+updatedAt: 2026-11-26
 cover: /images/covers/preparing-for-salesforce-releases.jpg
 sources:
   - title: "Salesforce Trust (maintenance schedule)"
@@ -17,7 +17,7 @@ Salesforce ships three major releases a year, named Winter, Spring and Summer. E
 
 > Exact dates differ per release and per instance. Look up your instance on Salesforce Trust (under Maintenance) for your org's dates and read the official release notes for each release.
 
-For example, Summer '26 shipped API version 67.0 (Winter '27, in October 2026, shipped 68.0) and brought changes that affect Apex security (user mode by default and `with sharing` as the default for classes compiled at 67.0, per the developer guide). Confirm details like these in the current release notes, because they can change.
+For example, Summer '26 shipped API version 67.0 and brought changes that affect Apex security (user mode by default and `with sharing` as the default for classes compiled at 67.0, per the developer guide). Confirm details like these in the current release notes, because they can change.
 
 ## The business scenario
 
@@ -212,10 +212,10 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 22
       - name: Install Salesforce CLI
         run: npm install --global @salesforce/cli
       - name: Scan for stale API versions

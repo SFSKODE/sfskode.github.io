@@ -65,7 +65,7 @@ A before-save Flow that stamps a field is the simplest useful case. In Flow Buil
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <Flow xmlns="http://soap.sforce.com/2006/04/metadata">
-    <apiVersion>68.0</apiVersion>
+    <apiVersion>67.0</apiVersion>
     <label>Opp Stamp Stage Change</label>
     <description>Before save: records when the stage last changed.</description>
     <processType>AutoLaunchedFlow</processType>
@@ -110,7 +110,7 @@ A before-save Flow that stamps a field is the simplest useful case. In Flow Buil
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <Flow xmlns="http://soap.sforce.com/2006/04/metadata">
-    <apiVersion>68.0</apiVersion>
+    <apiVersion>67.0</apiVersion>
     <label>Opp Negotiation Follow Up</label>
     <description>After save: creates one follow-up Task when a deal enters Negotiation. Faults are logged.</description>
     <processType>AutoLaunchedFlow</processType>
@@ -260,7 +260,7 @@ sf data query --target-org mysandbox --query \
   "SELECT ApiName, Label, ProcessType, TriggerType, TriggerObjectOrEventLabel FROM FlowDefinitionView WHERE IsActive = true ORDER BY TriggerObjectOrEventLabel"
 ```
 
-Paste the result into your team wiki and update it whenever a Flow is added. Field names on this view can change between releases, so if the query errors, run it in the Developer Console query editor and adjust.
+Paste the result into your team wiki and update it whenever a Flow is added. Field names on this view can change between releases, so if the query errors, run it in the Web Console, the Developer Console query editor, or with `sf data query` and adjust.
 
 ## What happens behind the scenes
 

@@ -4,13 +4,15 @@ description: "Submit many independent graphs of dependent records in one call: g
 category: salesforce-development
 tags: [Composite API, REST API, Integration, Advanced]
 publishedAt: 2026-11-10
-updatedAt: 2026-11-15
+updatedAt: 2026-11-26
 cover: /images/covers/composite-graph-advanced.jpg
 sources:
   - title: "Using Composite Graphs"
     url: "https://developer.salesforce.com/docs/platform/api-rest/guide/resources-composite-graph-introduction.html"
   - title: "REST API Developer Guide: Composite resources"
     url: "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/resources_composite.htm"
+  - title: "Composite Graph"
+    url: "https://developer.salesforce.com/docs/platform/api-rest/guide/resources-composite-graph.html"
 ---
 
 Composite graphs extend the `/composite` resource. A regular composite request allows 25 subrequests; a composite graph request allows **500**, split into independent graphs that each succeed or fail on their own. The rules in this article come from the official Composite Graph documentation, and the code is a builder and runner you can adapt.
@@ -32,7 +34,7 @@ Harvest Foods (a fictional wholesaler) imports 2,000 customer onboarding bundles
 
 1. Give each bundle a stable id from the portal. It becomes the graph id and `Bundle_Id__c`.
 2. Validate bundles before sending (email format, required names) to avoid avoidable failures.
-3. Use Node 20 or newer, and set `INSTANCE` and `TOKEN`.
+3. Use Node 22 LTS or newer, and set `INSTANCE` and `TOKEN`.
 
 ## How it works
 

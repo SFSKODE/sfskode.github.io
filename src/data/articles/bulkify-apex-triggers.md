@@ -4,7 +4,7 @@ description: "Why Apex triggers must handle 200 records at a time, and how Sets,
 category: salesforce-development
 tags: [Apex, Triggers, Governor Limits, Best Practices]
 publishedAt: 2026-11-03
-updatedAt: 2026-11-13
+updatedAt: 2026-11-26
 cover: /images/covers/bulkify-apex-triggers.jpg
 featured: true
 sources:
@@ -211,7 +211,7 @@ public with sharing class SubscriptionTriggerHandler {
 
 **`force-app/main/default/classes/ContactSelector.cls`**
 
-This is the only class that queries Contacts. It is `without sharing` on purpose: the renewal price must count every licensed Contact, so it cannot depend on which records the account manager can see. It returns data to code only.
+This is the only class that queries Contacts. It is `without sharing` on purpose: the renewal price must count every licensed Contact, so it cannot depend on which records the account manager can see. It returns data to code only. Both queries carry `WITH SYSTEM_MODE` because, in classes saved at API version 67.0 (Summer '26) or later, SOQL runs in user mode by default and user mode always respects the user's sharing rules, whatever the class keyword says. Classes at 66.0 and earlier default to system mode, where the keyword decides.
 
 ```apex
 public without sharing class ContactSelector {
@@ -226,6 +226,7 @@ public without sharing class ContactSelector {
             SELECT AccountId acct, COUNT(Id) total
             FROM Contact
             WHERE AccountId IN :accountIds AND Is_Licensed__c = true
+            WITH SYSTEM_MODE
             GROUP BY AccountId
         ]) {
             seats.put((Id) ar.get('acct'), (Integer) ar.get('total'));
@@ -243,6 +244,7 @@ public without sharing class ContactSelector {
             SELECT Id, (SELECT Id FROM Contacts WHERE Is_Licensed__c = true)
             FROM Account
             WHERE Id IN :accountIds
+            WITH SYSTEM_MODE
         ]) {
             result.put(a.Id, a.Contacts);
         }
@@ -661,7 +663,7 @@ In a debug log, look for `SOQL_EXECUTE_BEGIN` lines (you should see exactly two)
 ## Test it and verify
 
 1. Run the test class (command above). All four methods should pass.
-2. Seed 100 accounts with licensed contacts. Run this in Developer Console, Debug, Open Execute Anonymous Apex:
+2. Seed 100 accounts with licensed contacts. Run this as anonymous Apex, for example in Developer Console, Debug, Open Execute Anonymous Apex (since Winter '27 the Developer Console is hidden by default: use the Web Console, or turn on **Enable Developer Console** under Web Console in Setup), or with `sf apex run --file seed.apex`:
 
    ```apex
    // Anonymous Apex

@@ -4,7 +4,7 @@ description: "Load data safely into Salesforce: clean and validate CSVs, upsert 
 category: salesforce-administration
 tags: [Data Loading, Duplicate Management, Bulk API, Intermediate]
 publishedAt: 2026-11-16
-updatedAt: 2026-11-16
+updatedAt: 2026-11-26
 sources:
   - title: "Salesforce Help: Import and Export Data"
     url: "https://help.salesforce.com/s/articleView?id=sf.importing.htm"
@@ -12,6 +12,10 @@ sources:
     url: "https://help.salesforce.com/s/articleView?id=sf.managing_duplicates_overview.htm"
   - title: "Bulk API 2.0 Developer Guide"
     url: "https://developer.salesforce.com/docs/atlas.en-us.api_asynch.meta/api_asynch/"
+  - title: "Bulk API 2.0: Relationship Fields in a Header Row"
+    url: "https://developer.salesforce.com/docs/platform/api-asynch/guide/relationship-fields-in-a-header-row-2-0.html"
+  - title: "Developer's Guide to the Winter '27 Release"
+    url: "https://developer.salesforce.com/blogs/2026/10/developers-guide-to-the-winter-27-release"
 ---
 
 Bad data is expensive. A single careless import can create thousands of duplicate contacts, overwrite good values with blanks and take days to clean up. This article covers the safe path: choose the right tool, **clean and validate before loading**, load with an external id so reruns are safe, and use duplicate rules so the platform stops duplicates for you.
@@ -32,12 +36,12 @@ Juniper Consulting has just acquired a smaller firm and received 40,000 contacts
 4. **Plan automation.** Triggers, flows and validation rules will fire on every row. Decide whether to leave them on (safer, slower) or use a bypass custom permission for the load (faster; you must then run the rules' checks yourself).
 5. **Duplicate and matching rules.** In Setup, open **Duplicate Management**. Activate the standard **Contact** matching rule and a duplicate rule that **Alerts** in the UI and **Reports** in the API (or **Blocks**, if you want a hard stop). Note that the action can differ for UI and API saves.
 6. **Backup.** Export the current Contacts first (Data Export or a bulk query), so you can roll back.
-7. Install the **Salesforce CLI** and sign in: `sf org login web --alias sandbox`. Install Node 20 for the preparation script.
+7. Install the **Salesforce CLI** and sign in: `sf org login web --alias sandbox`. Install Node.js 22 or later for the preparation script (the Salesforce CLI itself requires Node.js 22+ as of Winter '27).
 
 ### In the external system
 
 1. Ask the source team for the **primary key** of each contact in their system. That becomes `Source_Id__c`.
-2. Agree the **file contract**: columns (`FirstName`, `LastName`, `Email`, `Phone`, `AccountRef`), UTF-8 encoding, comma separated, one header row.
+2. Agree the **file contract**: columns (`SourceId`, `FirstName`, `LastName`, `Email`, `Phone`, `AccountRef`), UTF-8 encoding, comma separated, one header row.
 3. Ask them to freeze changes during the load window, or to provide a delta file afterwards.
 4. Keep their original file untouched; every cleaning step writes a new file.
 
@@ -57,7 +61,7 @@ Juniper Consulting has just acquired a smaller firm and received 40,000 contacts
 
 **Upsert** is the key to safe reruns. If the external id exists, the record is updated; otherwise it is created. A failed load can be fixed and run again without duplicating the successful rows.
 
-**Relationships in a load** can use the parent's external id too. A Contact row can carry `Account.Account_Ref__c` as its parent reference, so you never look up Salesforce ids.
+**Relationships in a load** can use the parent's external id too. A Contact row can carry a column headed `Account.Account_Ref__c` (relationship name, a dot, then the parent's external id field) as its parent reference, so you never look up Salesforce ids.
 
 **Duplicate management** has two parts. A **matching rule** defines what counts as similar (same email, or similar name and company). A **duplicate rule** decides what happens: **Allow** with an alert, or **Block**. Rules apply to UI and API saves; Apex can pass options to change the behaviour.
 
@@ -168,6 +172,7 @@ export function cleanRecord(raw) {
     LastName: titleCase(raw.LastName ?? ''),
     Email: normalizeEmail(raw.Email ?? ''),
     Phone: normalizePhone(raw.Phone ?? ''),
+    Source_Id__c: (raw.SourceId ?? '').trim(),
     Account_Ref__c: (raw.AccountRef ?? '').trim()
   };
   if (record.LastName === '') {
@@ -299,13 +304,15 @@ if (!input) {
 mkdirSync(outDir, { recursive: true });
 const { valid, rejected } = prepare(readFileSync(input, 'utf8'));
 
-const columns = ['FirstName', 'LastName', 'Email', 'Phone', 'Account_Ref__c'];
-batches(valid, 5000).forEach((batch, i) => {
+// The Bulk API header for the parent reference is RelationshipName.ExternalIdField.
+const columns = ['Source_Id__c', 'FirstName', 'LastName', 'Email', 'Phone', 'Account.Account_Ref__c'];
+const loadRows = valid.map(r => ({ ...r, 'Account.Account_Ref__c': r.Account_Ref__c }));
+batches(loadRows, 5000).forEach((batch, i) => {
   writeFileSync(`${outDir}/contacts-clean-${String(i + 1).padStart(3, '0')}.csv`, toCsv(batch, columns));
 });
 
 const rejects = rejected.map(r => ({ line: r.line, reasons: r.problems.join('; '), ...r.raw }));
-writeFileSync(`${outDir}/rejected.csv`, toCsv(rejects, ['line', 'reasons', 'FirstName', 'LastName', 'Email', 'Phone', 'AccountRef']));
+writeFileSync(`${outDir}/rejected.csv`, toCsv(rejects, ['line', 'reasons', 'SourceId', 'FirstName', 'LastName', 'Email', 'Phone', 'AccountRef']));
 
 console.log(`Valid: ${valid.length}, rejected: ${rejected.length}`);
 console.log(`Files written to ${outDir}/`);

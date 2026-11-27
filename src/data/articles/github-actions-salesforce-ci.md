@@ -4,7 +4,7 @@ description: "Validate every pull request by deploying to a test org and running
 category: web-and-devops
 tags: [CI/CD, GitHub Actions, Salesforce CLI, DevOps]
 publishedAt: 2026-11-06
-updatedAt: 2026-11-15
+updatedAt: 2026-11-26
 cover: /images/covers/github-actions-salesforce-ci.jpg
 sources:
   - title: "Salesforce CLI Command Reference"
@@ -25,7 +25,7 @@ Tidewater Logistics (a fictional company) merges about ten pull requests a week 
 
 1. Pick a **validation sandbox** that mirrors production. A partial or full copy is best, because validation against an empty scratch org misses data-dependent failures.
 2. Create a CI integration user with the permissions to deploy metadata and run tests, and nothing else. Do not use a personal login.
-3. Generate an **SFDX auth URL** for that user and sandbox with `sf org auth show-sfdx-auth-url --target-org <alias>` after logging in on a trusted machine, and for production the same way. (Before Winter '27 this URL was printed by `sf org display --verbose`; it no longer is, so older instructions and scripts will show `[REDACTED]`. Check the command with `--help` for your CLI version.) Treat these as passwords.
+3. Generate an **SFDX auth URL** for that user and sandbox with `sf org display --verbose --target-org <alias>` after logging in, and for production the same way. Treat these as passwords.
 4. Check that your production org's test coverage is healthy. Production deployments require 75 percent coverage of Apex overall, and every trigger must have some coverage.
 
 ### In the external system
@@ -58,9 +58,9 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: 20 }
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with: { node-version: 22 }
       - run: npm install --global @salesforce/cli
       - name: Authenticate
         run: |
@@ -191,12 +191,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 22
       - name: Install Salesforce CLI
         run: npm install --global @salesforce/cli
       - name: Unit tests for pipeline scripts
@@ -232,10 +232,10 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 22
       - run: npm install --global @salesforce/cli
       - name: Authenticate to production
         run: |

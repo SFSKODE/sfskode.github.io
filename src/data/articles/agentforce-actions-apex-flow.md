@@ -4,7 +4,7 @@ description: "Build reliable agent actions: bulk-safe invocable Apex with clear 
 category: agentforce
 tags: [Agentforce, Agent Actions, Apex, Flows, Intermediate]
 publishedAt: 2026-11-10
-updatedAt: 2026-11-15
+updatedAt: 2026-11-26
 cover: /images/covers/agentforce-actions-apex-flow.jpg
 sources:
   - title: "Legacy Guide: Agentforce Reasoning, Subagents, Instructions, and Actions"
@@ -13,6 +13,8 @@ sources:
     url: "https://docs.slack.dev/ai/customizing-agentforce-agents-with-custom-slack-actions"
   - title: "Create Custom Actions Using Apex Invocable Method"
     url: "https://developer.salesforce.com/docs/einstein/genai/guide/agent-invocablemethod.html"
+  - title: "Best Practices for Building Agentforce Apex Actions"
+    url: "https://developer.salesforce.com/blogs/2025/05/best-practices-for-building-agentforce-apex-actions"
 ---
 
 Actions are how an agent does real work. Per Salesforce's guide, each action has a **name**, **action instructions** and **input instructions**, and actions can be reused across subagents. This article builds two Apex actions (one read-only, one that changes data safely) and a Flow action, with the rules that make agents use them correctly.

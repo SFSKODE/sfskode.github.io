@@ -4,7 +4,7 @@ description: "Scope, constrain and test an AI agent before it meets customers: c
 category: agentforce
 tags: [Agentforce, Testing, Security]
 publishedAt: 2026-11-01
-updatedAt: 2026-11-15
+updatedAt: 2026-11-26
 cover: /images/covers/agentforce-guardrails-and-testing.jpg
 sources:
   - title: "Agentforce (Salesforce Developers)"
@@ -33,7 +33,7 @@ Brightwater Telecom (a fictional operator) is about to put a service agent in fr
 ### In the external system
 
 1. Keep the test set and scripts in your repository, in `agent/redteam/`.
-2. Install Node 20 or newer to run the scoring tool.
+2. Install Node 22 LTS or newer to run the scoring tool.
 3. Decide who owns the agent, where alerts go and who can approve a release.
 
 ## How it works

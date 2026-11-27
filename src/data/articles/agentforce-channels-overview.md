@@ -4,7 +4,7 @@ description: "Where an Agentforce agent can live and how to choose: a tested cha
 category: agentforce
 tags: [Agentforce, Slack, Microsoft Teams, Channels, Intermediate]
 publishedAt: 2026-11-10
-updatedAt: 2026-11-15
+updatedAt: 2026-11-26
 cover: /images/covers/agentforce-channels-overview.jpg
 sources:
   - title: "Agentforce in Slack: custom Slack actions"
@@ -38,7 +38,7 @@ Evergreen Insurance (a fictional insurer) has one claims-status agent and four r
 2. **Teams:** a Microsoft Entra ID administrator, because the Teams integration uses an Entra ID auth provider.
 3. **Website:** a web owner who controls the allowed origins and a privacy notice.
 4. **Custom app:** a backend developer, as shown in the Agent API article.
-5. Node 20 or newer for the selector and validator in this article.
+5. Node 22 LTS or newer for the selector and validator in this article.
 
 ## How it works
 

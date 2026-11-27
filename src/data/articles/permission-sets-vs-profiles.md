@@ -1119,7 +1119,7 @@ LIMIT_USAGE_FOR_NS|(default)|
 3. Log in as the officer (Setup, Users, Login, or `sf org open --target-org officer1`). Open an Onboarding Case. Expect to see Source Of Funds but not be able to edit it. Try to change Status to Approved. Expect the validation message.
 4. Log in as the manager. Add an approved limit, move the case to In Review, and click Approve. Expect the toast "Approved". Repeat on a High risk case; it also works because the manager holds both flags.
 5. Remove `PS_High_Risk_Approver` from the manager's group assignment path (use a user with only `PS_Onboarding_Approver`) and approve a High risk case. Expect "High risk cases need the Approve High Risk Onboarding permission".
-6. Run the three audit queries in the Developer Console Query Editor. Expect the manager and approver users in the third query only if their sets hold the flag.
+6. Run the three audit queries in the Web Console, the Developer Console Query Editor (if enabled), or with `sf data query`. Expect the manager and approver users in the third query only if their sets hold the flag.
 
 ## Common mistakes and fixes
 

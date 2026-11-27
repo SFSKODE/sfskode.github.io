@@ -25,8 +25,8 @@ Orbit Telecom (a fictional carrier) has 8 million Cases. The support console nee
 
 ### In Salesforce
 
-1. Use a Developer sandbox or scratch org. For realistic timing, load a few hundred thousand Cases with Data Loader or the Bulk API (see the Bulk API articles). Verify: `SELECT COUNT() FROM Case` in the Developer Console returns the number you loaded.
-2. Turn on the query plan tool. In the Developer Console choose Help, Preferences, and enable "Enable Query Plan" (label may differ slightly by release). Verify: the Query Editor now shows a **Query Plan** button.
+1. Use a Developer sandbox or scratch org. For realistic timing, load a few hundred thousand Cases with Data Loader or the Bulk API (see the Bulk API articles). Verify: `SELECT COUNT() FROM Case` in the Web Console, the Developer Console or `sf data query` returns the number you loaded.
+2. Turn on the query plan tool. Salesforce's Web Console FAQ lists a Query Plan Inspector in the Web Console, so look for it there first. In the Developer Console (hidden by default since Winter '27: Setup, Web Console, **Enable Developer Console**) choose Help, Preferences, and enable "Enable Query Plan" (label may differ slightly by release). Verify: the Query Editor now shows a **Query Plan** button.
 3. Make sure your user can read Case, Account and the fields used (Status, Priority, Subject, CreatedDate, AccountId). The code uses user mode, so missing field access is reported as an error.
 4. Install the Salesforce CLI: `sf org login web --alias dev`.
 
@@ -365,7 +365,7 @@ sf apex run test --class-names CaseSelectorTest --result-format human --code-cov
 ## Test it and verify
 
 1. Run the test class. Expected: 6 tests pass.
-2. In the Developer Console, open the Query Editor, paste `SELECT Id FROM Case WHERE Status = 'New'` and click **Query Plan**. Compare the "Cardinality" and "Cost" numbers with `SELECT Id FROM Case WHERE CreatedDate >= LAST_N_DAYS:7 AND Status = 'New'`. A lower relative cost means the optimizer found a better plan.
+2. In the Developer Console (see the note in the setup steps about re-enabling it), open the Query Editor, paste `SELECT Id FROM Case WHERE Status = 'New'` and click **Query Plan**. Compare the "Cardinality" and "Cost" numbers with `SELECT Id FROM Case WHERE CreatedDate >= LAST_N_DAYS:7 AND Status = 'New'`. A lower relative cost means the optimizer found a better plan.
 3. Call the service from anonymous Apex and look at the debug log:
 
 ```apex

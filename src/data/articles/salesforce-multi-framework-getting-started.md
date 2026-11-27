@@ -4,7 +4,7 @@ description: "What Multi-Framework is, which frameworks and orgs are supported, 
 category: react-and-salesforce
 tags: [Multi-Framework, React, Angular, Intermediate]
 publishedAt: 2026-11-12
-updatedAt: 2026-11-16
+updatedAt: 2026-11-26
 cover: /images/covers/salesforce-multi-framework-getting-started.jpg
 featured: true
 sources:
@@ -41,7 +41,7 @@ Juniper Consulting has a team of React developers who currently build separate p
 
 There is no external server, because the platform hosts the app. You do need:
 
-1. **Node 20 or newer** and npm.
+1. **Node 22 LTS or newer** and npm.
 2. A **Git repository** and a continuous integration service (the example uses GitHub Actions).
 3. For CI, a way to authenticate to a sandbox without a browser: a JWT-based login using an External Client App and a stored private key as a secret. See the OAuth article for the setup.
 4. Optionally an agentic coding tool; the Get Started page lists generating an app from a template with the CLI or such a tool.
@@ -261,10 +261,10 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 22
       - run: npm ci
       - name: Readiness of project metadata
         run: node --test tools/readiness.test.mjs

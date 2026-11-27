@@ -4,7 +4,7 @@ description: "A practical tour of Salesforce's APIs with runnable REST, GraphQL,
 category: salesforce-development
 tags: [REST API, SOAP API, GraphQL, Integration, Intermediate]
 publishedAt: 2026-11-10
-updatedAt: 2026-11-15
+updatedAt: 2026-11-26
 cover: /images/covers/salesforce-apis-map.jpg
 sources:
   - title: "Salesforce Platform APIs (Developer docs)"
@@ -30,7 +30,7 @@ Cedar Health (a fictional clinic network) is building a patient portal and a nig
 
 ### In the external system
 
-1. Use Node 20 or newer and `curl`.
+1. Use Node 22 LTS or newer and `curl`.
 2. Store the token in an environment variable for the session, not in files.
 3. Know your daily API request allocation. Check **Setup > System Overview** for API usage before large loads.
 
@@ -282,7 +282,7 @@ Composite sends several sub-requests in one HTTP call. With `allOrNone` set, if 
 
 Bulk API 2.0 is asynchronous. You create a job, upload CSV data, mark it complete, and Salesforce processes it in the background in chunks, without counting every row as a separate API call. You poll until the job ends, then fetch successful and failed results. That is why it suits hundreds of thousands of rows, while REST would be slow and costly.
 
-A note on **API versions**. Every URL contains a version such as `v68.0` (Winter '27). Versions 31.0 to 40.0 are deprecated in Summer '27 and retire in Summer '28. Salesforce keeps old versions working for a long time, which is why code that has not been touched for years still runs, but new fields and features appear only in newer versions. Keep the version in one constant, as the helper above does, so upgrading is a one-line change that you test in a sandbox first.
+A note on **API versions**. Every URL contains a version such as `v68.0`. Salesforce keeps old versions working for a long time, which is why code that has not been touched for years still runs, but new fields and features appear only in newer versions. Keep the version in one constant, as the helper above does, so upgrading is a one-line change that you test in a sandbox first.
 
 A note on **limits**. Each org has a rolling 24-hour allocation of API requests that depends on its edition and licenses, and a separate cap on how many requests can be in progress at once. An integration that loops over thousands of records making one call each can use the whole allocation and block every other integration. Prefer calls that carry many records, and check usage before and after any large run.
 
