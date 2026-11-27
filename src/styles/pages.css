@@ -373,7 +373,7 @@ html.theme-fade, html.theme-fade body, html.theme-fade * { transition: backgroun
 
 /* ---------- Print: reading-friendly, no chrome ---------- */
 @media print {
-  .aurora, .site-header, .mnav, .site-footer, .progress, .article__side, .toc-inline, .palette, .share, .code__copy, .cta, .totop, .marquee, .lib-toolbar, .cursor { display: none !important; }
+  .aurora, .space, .site-header, .mnav, .site-footer, .progress, .article__side, .toc-inline, .palette, .share, .code__copy, .cta, .totop, .marquee, .lib-toolbar, .cursor { display: none !important; }
   html, body { background: #fff !important; color: #000; }
   main { padding-top: 0; }
   .prose, .prose p, .prose li { color: #000; }

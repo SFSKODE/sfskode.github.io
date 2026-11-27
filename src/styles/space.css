@@ -1,0 +1,57 @@
+/* Dark-theme space backdrop. Everything here is decorative and sits behind the content (z-index 0; main is z-index 1).
+   Light theme: hidden, the sky stays. Reduced motion: no flying travellers or meteors, the black hole is a still image. */
+@layer components {
+  .space { display: none; position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; contain: strict; background: #02030a; }
+  :root[data-theme='dark'] .space { display: block; }
+  :root[data-theme='dark'] .aurora { display: none; }
+
+  /* A touch more opaque header bar over the moving picture, so the nav and search text stay crisp. */
+  :root[data-theme='dark'] { --header-bg: rgba(12, 16, 26, 0.76); --header-bg-2: rgba(12, 16, 26, 0.88); }
+
+  .space__canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; opacity: 0; transition: opacity 1.2s ease; }
+  .space.is-live .space__canvas { opacity: 1; }
+
+  /* Shown only when WebGL is missing: a calm CSS black hole in the same corner. */
+  .space__fallback { position: absolute; inset: 0; background:
+      radial-gradient(circle at 76% 24%, #000 0 4.5%, rgb(255 190 120 / 0.9) 5.3%, rgb(255 120 40 / 0.35) 8%, transparent 17%),
+      radial-gradient(ellipse 70% 55% at 76% 24%, rgb(60 70 150 / 0.22), transparent 70%),
+      radial-gradient(1px 1px at 12% 20%, #fff, transparent), radial-gradient(1px 1px at 34% 70%, #cfe0ff, transparent), radial-gradient(1.5px 1.5px at 58% 40%, #fff, transparent),
+      radial-gradient(1px 1px at 82% 78%, #ffe2c4, transparent), radial-gradient(1px 1px at 91% 12%, #fff, transparent), radial-gradient(1px 1px at 22% 88%, #fff, transparent); }
+  .space.is-live .space__fallback { display: none; }
+
+  /* The reading veil: keeps the area under the text calm no matter what the shader draws. It darkens the middle and the
+     left, leaving the black hole in the top-right corner at full strength. */
+  .space__veil { position: absolute; inset: 0; background:
+      linear-gradient(90deg, rgb(2 3 10 / 0.55) 0%, rgb(2 3 10 / 0.4) 50%, rgb(2 3 10 / 0.1) 82%),
+      radial-gradient(ellipse 60% 75% at 42% 55%, rgb(2 3 10 / 0.5), transparent 100%); }
+
+  /* Shooting stars: spawned by space.ts. */
+  .space__meteors { position: absolute; inset: 0; overflow: hidden; }
+  .meteor { position: absolute; width: 140px; height: 2px; border-radius: 2px; background: linear-gradient(90deg, rgb(255 255 255 / 0), rgb(200 225 255 / 0.9)); opacity: 0; transform-origin: 100% 50%; animation: meteor 1.15s cubic-bezier(0.3, 0.1, 0.6, 1) forwards; filter: drop-shadow(0 0 4px rgb(160 200 255 / 0.9)); }
+  @keyframes meteor {
+    0% { opacity: 0; translate: 0 0; }
+    12% { opacity: 0.95; }
+    100% { opacity: 0; translate: var(--dx) var(--dy); }
+  }
+
+  /* Little original space travellers: they cross the screen slowly, far behind the content, and stay dim. */
+  .trav { position: absolute; left: 0; top: 0; width: var(--s); opacity: 0.7; will-change: transform; animation: fly var(--t) linear var(--d) infinite; }
+  .trav__art { display: block; width: 100%; height: auto; filter: drop-shadow(0 0 10px rgb(120 170 255 / 0.35)); animation: bob 6s ease-in-out infinite alternate; }
+  .trav--pod .trav__art { animation-duration: 7.5s; }
+  .trav--sat .trav__art { animation: bob 9s ease-in-out infinite alternate; }
+  .trav__flame { transform-origin: 50% 0; animation: flame 0.18s ease-in-out infinite alternate; }
+  .trav__blink { animation: blink 2.4s ease-in-out infinite; }
+  @keyframes fly {
+    from { transform: translate3d(var(--x0), var(--y0), 0) rotate(var(--r)); }
+    to { transform: translate3d(var(--x1), var(--y1), 0) rotate(var(--r)); }
+  }
+  @keyframes bob { from { translate: 0 -6px; rotate: -3deg; } to { translate: 0 6px; rotate: 3deg; } }
+  @keyframes flame { from { scale: 1 0.8; opacity: 0.85; } to { scale: 1 1.15; opacity: 1; } }
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+  @media (max-width: 700px) { .trav { opacity: 0.42; width: calc(var(--s) * 0.7); } .trav--sat, .trav--saucer { display: none; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .trav, .meteor { display: none; }
+    .space__canvas { transition: none; }
+  }
+}
